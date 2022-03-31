@@ -1,0 +1,23 @@
+services:
+  fastapi:
+    ports:
+      - 8000:8000
+      - 8001:8001
+      - 5678:5678
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    command: "uvicorn --reload --reload-dir /app/api api.main:app --host 0.0.0.0 --port 8000 --log-level debug"
+    # command: '/bin/bash'
+    # tty: true
+
+  vue:
+    # command: '/bin/bash'
+    # tty: true
+    # logging:
+    #   driver: 'none'
+
+  postgres:
+    # command: '/bin/bash'
+    # tty: true
