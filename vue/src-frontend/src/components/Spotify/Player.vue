@@ -1,7 +1,7 @@
 <template>
   <div class="border h-100">
-    <Visualizer class="visualizer" />
     <PlayerBar class="player"/>
+    <Visualizer class="visualizer" />
   </div>
 </template>
 

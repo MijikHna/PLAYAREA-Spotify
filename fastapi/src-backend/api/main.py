@@ -16,12 +16,20 @@ app: FastAPI = FastAPI(
     version=playarea2_config.VERSION
 )
 
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # expose_headers=["*"],
+    # max_age=3600
 )
 
 app.add_event_handler('startup', create_start_app_handler(app))

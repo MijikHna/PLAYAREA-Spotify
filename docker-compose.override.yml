@@ -9,15 +9,15 @@ services:
     cap_add:
       - SYS_PTRACE
     command: "uvicorn --reload --reload-dir /app/api api.main:app --host 0.0.0.0 --port 8000 --log-level debug"
-    # command: '/bin/bash'
-    # tty: true
 
   vue:
-    # command: '/bin/bash'
-    # tty: true
     # logging:
     #   driver: 'none'
 
   postgres:
     # command: '/bin/bash'
     # tty: true
+
+  nginx:
+    command: 'echo "shut down"'
+    restart: 'no'

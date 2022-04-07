@@ -3,3 +3,7 @@ body {
   margin: 0;
   background-color: var(--surface-200);
 }
+
+.full-height {
+  min-height: calc(100vh - 56px - 56px);
+}

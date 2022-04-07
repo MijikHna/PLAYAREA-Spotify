@@ -1,3 +1,6 @@
+import { UtilsServcie } from "@/services/UtilsService";
+
+import { AuthUser } from "@/interfaces/interfaces";
 import {
   createRouter,
   createWebHistory,
@@ -51,11 +54,29 @@ const router: Router = createRouter({
 });
 
 router.beforeEach(async (to: any, from: any) => {
-  if (!store.state.auth.isAuthenticated && to.path !== "/login") {
+  let authToken: AuthUser | null = UtilsServcie.getDecodedAuthCookie();
+
+  if (!authToken && to.path !== "/login") {
     return "/login";
   }
 
-  if (store.state.auth.isAuthenticated && to.path === "/login") {
+  if (!authToken && to.path === "/login") {
+    return;
+  }
+
+  const now = new Date();
+  const expDate = new Date(authToken.exp * 1000);
+
+  if (now > expDate && to.path !== "/login") {
+    return "/login";
+  }
+
+  if (!store.state.auth.isAuthenticated) {
+    store.commit("setActiveUser", authToken);
+    store.commit("setAuth", true);
+  }
+
+  if (to.path === "/login") {
     return "/";
   }
 });

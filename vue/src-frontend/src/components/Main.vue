@@ -1,6 +1,10 @@
 <template>
-    <main class="flex-shrink-0">
-        <router-view></router-view>
+    <main class="container-fluid p-0">
+      <div class="row full-height m-0">
+        <div class="col justify-content-center p-0">
+          <router-view></router-view>
+        </div>
+      </div>
     </main>
 </template>
 

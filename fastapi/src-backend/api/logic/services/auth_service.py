@@ -56,7 +56,8 @@ class AuthService:
         token_data: TokenDataDto = TokenDataDto(username=user.username)
         to_encode: Dict[str:] = token_data.dict()
 
-        expires_at: datetime = datetime.utcnow() + timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires_at: datetime = datetime.now(
+        ) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
         to_encode.update({'exp': expires_at})
 

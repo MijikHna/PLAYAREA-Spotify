@@ -4,7 +4,7 @@ from api.logic.dto.user_dto import UserBaseDto
 
 from api.logic.services.auth_service import AuthService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='api/auth/token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='api/auth/token_fastapi')
 
 
 async def get_user_from_token(

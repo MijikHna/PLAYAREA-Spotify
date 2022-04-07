@@ -8,11 +8,13 @@ from typing import Dict, Any
 
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
+from api.logic.dto.user_dto import UserBaseDto
 
 from api.logic.services.spotify_service import SpotifyService
 
 from api.logic.dto.spotify_dto import SpotifyCallbackCodeDto
 from api.logic.dto.spotify_dto import SpotifyCallbackAccessTokenDto
+from api.logic.utils.auth import get_user_from_token
 
 from api.shared.other.other import generate_random_string
 from api.shared.other.url_query_params import UrlQueryParams
@@ -27,8 +29,8 @@ spotify_router: APIRouter = APIRouter(
     '/login',
     response_class=RedirectResponse
 )
-async def login_to_spotify() -> RedirectResponse:
-    scope: str = "streaming user-read-email user-read-private"
+async def login_to_spotify(user: UserBaseDto = Depends(get_user_from_token)) -> JSONResponse:
+    scope: str = "streaming user-read-email user-read-private user-read-currently-playing user-read-playback-state"
     state: str = generate_random_string(16)
 
     auth_query_params = UrlQueryParams(
@@ -43,9 +45,11 @@ async def login_to_spotify() -> RedirectResponse:
         }
     )
 
-    redirect_response = RedirectResponse(
-        url='https://accounts.spotify.com/authorize/?' + auth_query_params.to_query_str(),
-        status_code=status.HTTP_303_SEE_OTHER,
+    redirect_response = JSONResponse(
+        content={
+            'url': 'https://accounts.spotify.com/authorize/?' + auth_query_params.to_query_str()
+        },
+        status_code=status.HTTP_200_OK,
     )
 
     return redirect_response

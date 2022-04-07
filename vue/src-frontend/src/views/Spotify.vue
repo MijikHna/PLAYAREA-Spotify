@@ -1,6 +1,6 @@
 <template>
   <div
-    class="container-flex full-height"
+    class="max-player-width mx-auto"
   >
     <div class="row px-0 mx-0">
       <Menu />
@@ -17,8 +17,8 @@
 </template>
 
 <script lang="ts">
-import {ITrack, ITrackList} from "@/interfaces/spotify/spotifyInterfaces";
-import { BackendDataService } from "@/services/backendDataService";
+import {ITrack, ITrackList} from "@/interfaces/spotifyInterfaces";
+import { BackendHttpService } from "@/services/BackendHttpService";
 
 import Menu from "@/components/Spotify/Menu.vue";
 import Player from "@/components/Spotify/Player.vue";
@@ -43,15 +43,17 @@ export default defineComponent({
     const store: Store<any> = useStore();
 
     // attr
-    let spotifyPlayerSDKDOMElem: HTMLElement|null = computed(() => store.state.spotify.spotifyPlaybackSDKDOMElem);
+    let spotifyPlayerSDKDOMElem: HTMLElement|null = computed(() => store.state.spotify.spotifyPlayerSDKDOMElem);
     let spotifyPlayer: any = computed(() => store.state.spotify.spotifyPlayer);
-    const currentTrack: ITrack = computed(() => store.state.spotify.currentTrack);
-    const trackList: ITrackList = computed(() => store.state.spotify.trackList);
+    let currentTrack: ITrack = computed(() => store.state.spotify.currentTrack);
+    let trackList: ITrackList = computed(() => store.state.spotify.trackList);
 
     // methods
     const initSpotifyPlayer = function(){
 
-      BackendDataService.getSavedSpotifyToken()
+      const backendHttpService = new BackendHttpService();
+
+      backendHttpService.getSavedSpotifyToken()
         .then((response: any) => {
           if (response.status !== 200) {
             return;
@@ -59,16 +61,18 @@ export default defineComponent({
 
           store.commit("setSpotifyAuthSuccess", response.status === 200);
 
-          spotifyPlayerSDKDOMElem = document.createElement("script");
-          spotifyPlayerSDKDOMElem.setAttribute(
+          const spotifyPlayerSDKDOMElemTemp = document.createElement("script");
+          spotifyPlayerSDKDOMElemTemp.setAttribute(
             "src",
             "https://sdk.scdn.co/spotify-player.js"
           );
-          spotifyPlayerSDKDOMElem.setAttribute("defer", "true");
-          document.head.appendChild(spotifyPlayerSDKDOMElem);
+          spotifyPlayerSDKDOMElemTemp.setAttribute("defer", "true");
+          document.head.appendChild(spotifyPlayerSDKDOMElemTemp);
+          store.commit("setSpotifyPlayerDOMElem", spotifyPlayerSDKDOMElemTemp);
+
 
           window.onSpotifyWebPlaybackSDKReady = () => {
-            spotifyPlayer = new window.Spotify.Player({
+            const spotifyPlayerTemp = new window.Spotify.Player({
               name: "Playarea2 Web Playback SDK",
               getOAuthToken: (cb) => {
                 cb(response.data.token);
@@ -76,15 +80,24 @@ export default defineComponent({
               volume: 0.5,
             });
 
-            spotifyPlayer.addListener("ready", ({ device_id }) => {
-              console.log("Ready with Device ID", device_id);
+            spotifyPlayerTemp.addListener("ready", ({ device_id }) => {
+              console.log("Ready with Device ID");
             });
 
-            spotifyPlayer.addListener("not_ready", ({ device_id }) => {
-              console.log("Device ID has gone offline", device_id);
+            spotifyPlayerTemp.addListener("not_ready", ({ device_id }) => {
+              console.log("Device ID has gone offline");
+            });
+            spotifyPlayerTemp.addListener('player_state_changed', ({
+              position,
+              duration,
+              track_window: {current_track}
+            }) => {
+              store.commit('setCurrentTrack', current_track);
             });
 
-            spotifyPlayer.connect();
+            spotifyPlayerTemp.connect();
+
+            store.commit("setSpotifyPlayer", spotifyPlayerTemp);
           };
         }).catch((err: Error) => {
           console.error(err.message);
@@ -117,6 +130,10 @@ export default defineComponent({
 <style scoped>
 .spotify-player-height {
   min-height: calc(100vh - 56px - 56px - 45px);
+}
+
+.max-player-width {
+  max-width: 1200px;
 }
 </style>
 

@@ -15,11 +15,11 @@ auth_router: APIRouter = APIRouter(
 
 
 @auth_router.post(
-    '/token',
+    '/token_fastapi',
     response_model=TokenDto,
     status_code=status.HTTP_201_CREATED
 )
-async def create_user_token(
+async def create_user_token_(
     user_form: OAuth2PasswordRequestForm = Depends(
         OAuth2PasswordRequestForm),
     auth_srv: AuthService = Depends(AuthService)
@@ -28,6 +28,28 @@ async def create_user_token(
         username=user_form.username,
         password=user_form.password
     )
+    try:
+        token: str = auth_srv.create_user_token(user)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=e.message
+        )
+    return TokenDto(
+        access_token=token,
+        token_type='bearer'
+    )
+
+
+@auth_router.post(
+    '/token',
+    response_model=TokenDto,
+    status_code=status.HTTP_201_CREATED
+)
+async def create_user_token_(
+    user: UserDto,
+    auth_srv: AuthService = Depends(AuthService)
+) -> TokenDto:
     try:
         token: str = auth_srv.create_user_token(user)
     except Exception as e:

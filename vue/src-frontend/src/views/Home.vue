@@ -1,29 +1,27 @@
 <template>
-  <div class="container">
-    <div class="row">
-      <div
-        class="col-md-6 col-lg-4"
-        v-for="(app, index) in apps"
-        :key="index"
-      >
-        <Card class="m-2">
-          <template #header>
-            <img
-              class="image-size mt-2"
-              :alt="`${app.name} icon`"
-              :src="app.image"
-            />
-          </template>
-          <template #title> {{ app.name }}</template>
-          <template #content>
-            Here you can explore the {{ app.name }} application. <br />
-            Try it out!!!
-          </template>
-          <template #footer>
-            <Button icon="pi pi-forward" label="Try" @click="goTo(app.url)" />
-          </template>
-        </Card>
-      </div>
+  <div class="row m-0">
+    <div
+      class="col-md-6 col-lg-4"
+      v-for="(app, index) in apps"
+      :key="index"
+    >
+      <Card class="m-2">
+        <template #header>
+          <img
+            class="image-size mt-2"
+            :alt="`${app.name} icon`"
+            :src="app.image"
+          />
+        </template>
+        <template #title> {{ app.name }}</template>
+        <template #content>
+          Here you can explore the {{ app.name }} application. <br />
+          Try it out!!!
+        </template>
+        <template #footer>
+          <Button icon="pi pi-forward" label="Try" @click="goTo(app.url)" />
+        </template>
+      </Card>
     </div>
   </div>
 </template>

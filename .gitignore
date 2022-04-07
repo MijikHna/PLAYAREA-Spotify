@@ -206,4 +206,8 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+### Additionaly ###
+postgres/docker/data/
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,python,virtualenv,venv,vue,vuejs
+pos
