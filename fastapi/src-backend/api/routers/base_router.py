@@ -12,6 +12,6 @@ base_router: APIRouter = APIRouter(
 )
 async def get_base() -> JSONResponse:
     return JSONResponse(
-        content={'message': 'Testr'},
+        content={'message': 'OK'},
         status_code=status.HTTP_200_OK
     )

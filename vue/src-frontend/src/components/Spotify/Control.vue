@@ -2,21 +2,15 @@
   <div class="border h-100">
     <PlayerBar class="player"/>
     <Visualizer class="visualizer" />
+    <TrackSlider class='track-slider'/>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import PlayerBar from "./PlayerBar.vue";
 import Visualizer from "./Visualizer.vue";
-import { defineComponent } from "vue";
+import TrackSlider from "./TrackSlider.vue";
 
-export default defineComponent({
-  name: "Player",
-  components: {
-    PlayerBar,
-    Visualizer,
-  }
-});
 </script>
 
 <style scoped>
@@ -24,6 +18,9 @@ export default defineComponent({
   height: 10%;
 }
 .visualizer {
-  height: 90%;
+  height: 80%;
+}
+.track-slider {
+  height: 10%;
 }
 </style>

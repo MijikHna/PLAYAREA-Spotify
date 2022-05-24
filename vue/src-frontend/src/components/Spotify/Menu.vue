@@ -8,6 +8,12 @@
           class="p-button-sm"
           @click="loginToSpotify"
         >
+          <ProgressSpinner
+            v-if="logginInToSpotify"
+            strokeWidth="8"
+            style="width:20px;height:20px"
+            class="me-2"
+          />
           Login To Spotify
         </Button>
         <Button
@@ -23,50 +29,94 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-
-import Button from "primevue/button";
+<script setup lang="ts">
+import { ref, Ref } from 'vue';
 import { useStore, Store } from "vuex";
 import { computed } from "@vue/reactivity";
+
+import Button from "primevue/button";
+import ProgressSpinner from 'primevue/progressspinner';
+
+import { useToast } from 'primevue/usetoast';
+import { ToastServiceMethods } from "primevue/toastservice";
+
+import { AxiosResponse } from "axios";
+
 import { BackendHttpService } from "@/services/BackendHttpService";
 
-export default defineComponent({
-  name: "Menu",
-  components: {
-    Button,
-  },
-  setup(){
-    const store: Store<any> = useStore();
+//global
+const store: Store<any> = useStore();
+const toast: ToastServiceMethods = useToast();
 
-    const BACKEND_URL =  import.meta.env.VITE_BACKEND_URL;
+//data
+const logginInToSpotify: Ref<boolean> =  ref<boolean>(false);
 
-    const spotifyAuthSuccess = computed(() => store.getters.getSpotifyAuthSuccess);
+// computed
+const spotifyAuthSuccess = computed(() => store.getters.getSpotifyAuthSuccess);
 
-    const loginToSpotify = async function(){
-      const backendHttpSrv =  new BackendHttpService();
-      const response = await backendHttpSrv.loginToSpotify();
+// methods
+const loginToSpotify = async function(){
+  // TODO: try-catch + Toaster
+  logginInToSpotify.value = true;
 
-      if (response.status === 200) {
-        window.location.href = response.data.url;
 
-        return;
-      }
+  const response = await BackendHttpService.loginToSpotify();
 
-      console.log(response);
-    }
+  if (response.status === 200) {
+    window.location.href = response.data.url;
 
-    const logoutFromSpotify = function() {
+    logginInToSpotify.value = false;
+    return;
+  }
 
-    }
+  logginInToSpotify.value = false;
+}
 
-    return {
-      spotifyAuthSuccess,
-      loginToSpotify,
-      logoutFromSpotify
+const logoutFromSpotify = async function(): Promise<void> {
+  try {
+    const response: AxiosResponse = await BackendHttpService.lougOutFromSpotify();
+
+
+    if (response.status === 202) {
+      const spotifyPlayer = store.state.spotify.spotifyPlayer;
+      spotifyPlayer.disconnect();
+
+      store.dispatch('resetSpotifyPlayer');
+
+      toast.add({
+        severity: 'success',
+        summary: `Spotify Logout`,
+        detail: `You has been logged out from Spotify`,
+        life: 5000,
+      });
     }
   }
-});
+  catch(e){
+    toast.add({
+      severity: 'error',
+      summary: `Spotify Logout`,
+      detail: `You hasn;t been logged out from Spotify`,
+      life: 5000,
+    });
+  }
+}
 </script>
 
-<style scoped></style>
+<style>
+@keyframes p-progress-spinner-color {
+    100%,
+    0% {
+        stroke: #ffa700;
+    }
+    40% {
+        stroke: #ffa700;
+    }
+    66% {
+        stroke: #ffa700;
+    }
+    80%,
+    90% {
+        stroke: #ffa700;
+    }
+}
+</style>

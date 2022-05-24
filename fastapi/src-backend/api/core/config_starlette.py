@@ -7,7 +7,7 @@ from starlette.datastructures import URL, Secret
 config = Config('.env')
 
 
-class Playarea2Config:
+class PlayareaConfig2:
     APP_NAME: str = 'PLAYAREA2'
     VERSION: str = '1.0.0'
     API_PREFIX: str = '/api'

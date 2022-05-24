@@ -19,3 +19,22 @@ export interface UserToken {
   accessToken: string;
   tokenType: string;
 }
+
+export interface UserCreate {
+  id?: number;
+  username: string;
+  email: string;
+  password: string;
+  password_confirm: string;
+  is_superuser?: false;
+}
+
+export interface User {
+  id?: number;
+  username: string;
+  email: string;
+}
+
+export interface BaseState {
+  theme: string;
+}

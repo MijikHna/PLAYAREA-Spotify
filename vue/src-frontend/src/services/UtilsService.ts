@@ -2,10 +2,10 @@ import { DecodesUserToken, UserToken } from "@/interfaces/baseInterfaces";
 import { Buffer } from "buffer";
 
 export class UtilsServcie {
-  static getDecodedAuthCookie = (): DecodesUserToken | null => {
+  static getDecodedAuthCookie = (): DecodesUserToken => {
     const cookies = document.cookie.split("; ");
 
-    let decodedUserToken: DecodesUserToken | null = null;
+    let decodedUserToken: DecodesUserToken = null;
 
     cookies.every((cookie) => {
       if (cookie.startsWith("Authorization")) {
@@ -24,10 +24,10 @@ export class UtilsServcie {
     return decodedUserToken;
   };
 
-  static getAuthToken = (): UserToken | null => {
+  static getAuthToken = (): UserToken => {
     const cookies = document.cookie.split("; ");
 
-    let userToken: UserToken | null = null;
+    let userToken: UserToken = null;
 
     cookies.every((cookie) => {
       if (cookie.startsWith("Authorization")) {

@@ -1,98 +1,178 @@
 <template>
   <div class="row mx-0 justify-content-between align-items-center">
     <div class="col" >
-      <Button icon="pi pi-question" v-tooltip.top="'Random'" class="p-button-raised p-button-rounded"></Button>
+      <Button
+        class="p-button-raised p-button-rounded"
+        icon="pi pi-question"
+        :disabled="true"
+        v-tooltip.top="'Random'"
+      ></Button>
     </div>
     <div class="col">
       <Button
-        icon="pi pi-backward"
-        v-tooltip.top="'Backward'"
         class="p-button-rounded"
+        icon="pi pi-backward"
+        :disabled="!spotifyAuthSuccess"
+        v-tooltip.top="'Backward'"
         @click="playPreviousTrack"
       ></Button>
     </div>
     <div class="col">
       <Button
+        class="p-button-rounded"
+        :disabled="!spotifyAuthSuccess"
         :icon="playIcon"
         v-tooltip.top="'Play'"
-        class="p-button-rounded"
         @click="togglePlay"
       ></Button>
     </div>
     <div class="col">
       <Button
-        icon="pi pi-forward"
-        v-tooltip.top="'Forward'"
         class="p-button-rounded"
-         @click="playNextTrack"
+        icon="pi pi-forward"
+        :disabled="!spotifyAuthSuccess"
+        v-tooltip.top="'Forward'"
+        @click="playNextTrack"
       ></Button>
-    </div>
-    <div class="col">
-      <Button icon="pi pi-replay" v-tooltip.top="'Replay'" class="p-button-rounded"></Button>
     </div>
     <div class="col">
       <Button
-        icon="pi pi-tablet"
-        v-tooltip.top="'Devices'"
         class="p-button-rounded"
-        @click="toggleDevices"
+        icon="pi pi-replay"
+        :disabled="!spotifyAuthSuccess"
+        v-tooltip.top="'Replay'"
       ></Button>
-      <Menu
-        ref="menu"
-        :model="items"
-        :popup="true"
-      >
-        <!-- <template #item="{item}">
-          {{item.label}}
-        </template> -->
-      </Menu>
     </div>
     <div class="col">
-      <Button icon="pi pi-volume-up" v-tooltip="'Volume'" class="p-button-rounded"></Button>
+      <Button
+        class="p-button-rounded"
+        icon="pi pi-tablet"
+        :disabled="!spotifyAuthSuccess"
+        v-tooltip.top="'Devices'"
+        @click="toggleDevices"
+      ></Button>
+      <OverlayPanel ref="deviceOp" class="padding-0">
+        <Menu
+          :model="devices"
+        >
+        </Menu>
+      </OverlayPanel>
+    </div>
+    <div class="col">
+      <Button
+        class="p-button-rounded"
+        :disabled="!spotifyAuthSuccess"
+        icon="pi pi-volume-up"
+        v-tooltip.top="'Volume'"
+        @click="toggleVolumePanel"
+      ></Button>
+      <OverlayPanel ref="volumeOp" :style="{width: '200px'}">
+          <Slider v-model="volumeLevel" @change="setVolume"></Slider>
+      </OverlayPanel>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, Ref } from "vue";
 
 import Button from "primevue/button";
 import Menu from "primevue/menu";
-import { computed } from "@vue/reactivity";
+import OverlayPanel from 'primevue/overlaypanel';
+import Slider from 'primevue/slider';
+import { useToast } from 'primevue/usetoast';
+
+import { computed, ComputedRef } from "@vue/reactivity";
 import { Store, useStore } from "vuex";
+
 import { SpotifyHttpService } from "@/services/SpotifyHttpService";
 
+import { IDeviceMenuEntry } from "@/interfaces/spotifyInterfaces";
+
+import { AxiosResponse } from "axios";
+
+
 export default defineComponent({
-  name: "PlayerBar",
   components: {
     Button,
     Menu,
+    Slider,
+    OverlayPanel
   },
   setup(){
     // global
     const store: Store<any> = useStore();
+    const toast = useToast();
+
 
     // template refs
-    const menu = ref(null);
-
-    // data
-    const playIcon = ref('pi pi-play');
-    const items = [];
+    const deviceOp = ref(null);
+    const volumeOp = ref(null);
 
     //computed
-    const spotifyAuthSuccess = computed(() => store.getters.getSpotifyAuthSuccess)
-    const spotifyPlayer = computed(() => store.state.spotify.spotifyPlayer);
+    const spotifyAuthSuccess: ComputedRef<boolean> = computed(() => store.getters.getSpotifyAuthSuccess)
+    const spotifyPlayer: ComputedRef<any> = computed(() => store.state.spotify.spotifyPlayer);
+
+    // data
+    const playIcon: Ref<string> = ref('pi pi-play');
+    const devices: Ref<any[]> = ref([]);
+    const volumeLevel: Ref<number> = ref(50);
+
 
     //methods
-    const toggleDevices = async function(event) {
-      const spotifyHttpSrv: SpotifyHttpService = new SpotifyHttpService();
-      const devices = await spotifyHttpSrv.getAvailableDevices();
-      console.log(devices)
-      items.length = 0;
-      devices.forEach((device: any) => {
-        items.push({label: device.name, id: device.id});
+    const toggleDevices = function(event: Event): void {
+      if (!spotifyAuthSuccess.value){
+        deviceOp.value.toggle(event);
+        return;
+      }
+
+      // TODO: Progress spinner
+
+      SpotifyHttpService.getAvailableDevices().then(spotifyDevices => {
+        const deviceMenuEntries: IDeviceMenuEntry[] = spotifyDevices.map(spotifyDevice => {
+          return {
+            deviceId: spotifyDevice.id,
+            label: spotifyDevice.name,
+            icon: 'pi pi-tablet',
+          }
+        });
+
+
+        deviceMenuEntries.forEach(device => {
+          device.command = async function(): Promise<void>{
+            try{
+              const response: AxiosResponse = await SpotifyHttpService.selectPlayer([device.deviceId])
+
+              if (response.status === 204) {
+                // store.commit("setThisPlayerActive", device.label === spotifyPlayer.value._options.name);
+
+                toast.add({
+                  severity: 'success',
+                  summary: `Select Player`,
+                  detail: `Player ${device.label} has been selected`,
+                  life: 5000,
+                });
+              }
+            }
+            catch(e){
+              toast.add({
+                severity: 'error',
+                summary: `Select Player`,
+                detail: `Player ${device.label} couldn't be selected`,
+                life: 5000,
+              })
+            }
+          }
+        });
+
+        devices.value = deviceMenuEntries;
       });
-      menu.value.toggle(event);
+
+      deviceOp.value.toggle(event);
+    }
+
+    const toggleVolumePanel = function (event: Event) {
+      volumeOp.value.toggle(event)
     }
 
     const togglePlay = async function(){
@@ -102,6 +182,8 @@ export default defineComponent({
         console.log('Another Spotify Player is playing');
         return;
       }
+
+      console.log(state);
 
       if (state.paused) {
         playIcon.value = 'pi pi-pause';
@@ -120,22 +202,39 @@ export default defineComponent({
       await spotifyPlayer.value.nextTrack();
     }
 
+    const setVolume = async function (volume: number) {
+      if (!spotifyPlayer.value) {
+        return;
+      }
+      await spotifyPlayer.value.setVolume(volume/100);
+
+    }
+
     return {
       //refs
-      menu,
+      deviceOp,
+      volumeOp,
       // data
       playIcon,
-      items,
+      devices,
+      volumeLevel,
       // computed
+      spotifyAuthSuccess,
       spotifyPlayer,
       // methods
       toggleDevices,
+      toggleVolumePanel,
       togglePlay,
       playPreviousTrack,
-      playNextTrack
+      playNextTrack,
+      setVolume
     }
   }
 });
 </script>
 
-<style scoped></style>
+<style>
+  .padding-0 > .p-overlaypanel-content {
+    padding: 0;
+  }
+</style>

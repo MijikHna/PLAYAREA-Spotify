@@ -97,8 +97,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      # - playarea2-postgres-data:/var/lib/psql/data
-      - ./postgres/docker/data:/var/lib/posgresql/data
+      - playarea2-pgdata:/var/lib/postgresql/data
     networks:
       playarea2-nw:
         ipv4_address: 192.17.10.40
@@ -110,3 +109,6 @@ networks:
       driver: default
       config:
         - subnet: '192.17.10.0/24'
+
+volumes:
+  playarea2-pgdata: {}

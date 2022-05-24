@@ -27,36 +27,43 @@ class UserRepository:
             deprecated='auto'
         )
 
-    def __get_password_hash(self, password):
+    def __hash_password(self, password):
         return self.__password_context.hash(password)
 
     def create_user(
         self,
         new_user: UserCreateDto,
-    ) -> UserBaseDto:
+    ) -> UserDao:
         user: UserDao = UserDao(
             id=new_user.id,
             username=new_user.username,
             email=new_user.email,
             email_verified=new_user.email_verified,
-            password=self.__get_password_hash(new_user.password)
+            password=self.__hash_password(new_user.password)
         )
 
         self.__db_session.add(user)
         self.__db_session.commit()
 
-        return UserBaseDto(
-            id=user.id,
-            username=user.username,
-            email=user.email
-        )
+        return user
 
     def get_user_by_unique_identifier(
         self,
         user: UserDto
     ) -> UserDao:
+        # also filter for email
         user_in_db: UserDao = self.__db_session.query(
             UserDao
-        ).filter(UserDao.username == user.username).first()
+        ).filter(UserDao.username == user.username).one()
+
+        return user_in_db
+
+    def get_user_by_id(
+        self,
+        user_id: UserBaseDto,
+    ) -> UserDao:
+        user_in_db: UserDao = self.__db_session.query(
+            UserDao
+        ).filter(UserDao.id == user_id).one()
 
         return user_in_db

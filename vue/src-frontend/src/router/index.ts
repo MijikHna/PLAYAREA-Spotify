@@ -4,6 +4,7 @@ import { AuthUser } from "@/interfaces/interfaces";
 import {
   createRouter,
   createWebHistory,
+  RouteLocationNormalized,
   Router,
   RouteRecordRaw,
 } from "vue-router";
@@ -13,37 +14,57 @@ import store from "../store";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    name: "Home",
+    name: "home",
     component: () => import("@/views/Home.vue"),
   },
   {
     path: "/login",
-    name: "Login",
+    name: "login",
     component: () => import("@/views/Login.vue"),
   },
   {
     path: "/spotify",
-    name: "Spotify",
+    name: "spotify",
     component: () => import("@/views/Spotify.vue"),
-    beforeEnter: (to: any) => {
-      if (to.query?.spotify_auth) {
-        store.commit(
-          "setSpotifyAuthSuccess",
-          to.query.spotify_auth.toLowerCase() === "true",
-        );
+    children: [
+      {
+        path: "player",
+        name: "player",
+        component: () => import("@/views/Spotify/Player.vue"),
+      },
+      {
+        path: "discover",
+        name: "discover",
+        component: () => import("@/views/Spotify/Discover.vue"),
+      },
+      {
+        name: "stats",
+        path: "stats",
+        component: () => import("@/views/Spotify/Stats.vue"),
+      },
+    ],
+  },
+  {
+    path: "/spotify/login-success",
+    name: "spotify-login-success",
+    component: () => import("@/views/SpotifyLoggedIn.vue"),
+    beforeEnter: (
+      to: RouteLocationNormalized,
+      from: RouteLocationNormalized,
+    ) => {
+      store.commit("setSpotifyAuthSuccess", true);
 
-        return { path: to.path, query: {}, hash: to.hash };
-      }
+      return;
     },
   },
   {
     path: "/excel",
-    name: "Excel",
+    name: "excel",
     component: () => import("@/views/Excel.vue"),
   },
   {
     path: "/about",
-    name: "About",
+    name: "about",
     component: () => import("@/views/About.vue"),
   },
 ];

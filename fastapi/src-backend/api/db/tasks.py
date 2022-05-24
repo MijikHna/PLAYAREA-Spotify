@@ -3,8 +3,6 @@ from api.db.db_config import db_engine
 from sqlalchemy.engine import Connection
 import logging
 
-from api.core.config_starlette import Playarea2Config, get_playarea2_config
-
 logger = logging.getLogger(__name__)
 
 

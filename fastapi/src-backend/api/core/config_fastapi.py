@@ -1,16 +1,16 @@
 from pydantic import BaseSettings, validator
 from functools import lru_cache
 
-from typing import Union, Optional, Any
-from pathlib import Path
 
-
-class Playarea2Config(BaseSettings):
+class PlayareaConfig(BaseSettings):
     app_name: str = 'PLAYAREA2'
     version: str = '1.0.0'
     api_prefix: str = '/api'
     spotify_client_id: str
     spotify_client_secret: str
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
     base_url: str
     backend_url: str
     backend_url_debug: str
@@ -33,5 +33,5 @@ class Playarea2Config(BaseSettings):
 
 
 @lru_cache()
-def get_playarea2_config() -> Playarea2Config:
-    return Playarea2Config()
+def get_playarea_config() -> PlayareaConfig:
+    return PlayareaConfig()

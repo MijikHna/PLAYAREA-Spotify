@@ -2,13 +2,16 @@ declare module "@vue/runtime-core" {
   interface SpotifyState {
     // Spotify Player
     spotifyAuthSuccess: boolean;
-    spotifyPlayerSDKDOMElem: any;
-    spotifyPlayer: any;
+    spotifyPlayerSDKDOMElem: any | null;
+    spotifyPlayer: any | null;
     // Devices
+    thisPlayerActive: boolean;
     devices: any[];
     // Playlist
-    currentTrack: string;
-    currentPlayList: string;
+    currentTrack: any | null;
+    nextTracks: any[];
+    playingContext: any | null;
+    playList: any | null;
   }
 
   interface AuthState {

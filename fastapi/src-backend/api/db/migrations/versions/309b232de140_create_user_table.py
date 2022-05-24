@@ -39,45 +39,44 @@ def create_updated_at_trigger() -> None:
 
 def create_users_table() -> None:
     op.create_table(
-        "users",
-        sa.Column("id", sa.Integer, primary_key=True),
+        'users',
+        sa.Column('id', sa.BigInteger, primary_key=True),
         sa.Column(
-            "username",
+            'username',
             sa.Text,
             unique=True,
             nullable=False,
             index=True
         ),
-        sa.Column("email", sa.Text, unique=True, nullable=False, index=True),
+        sa.Column('email', sa.Text, unique=True, nullable=False, index=True),
         sa.Column(
-            "email_verified",
+            'email_verified',
             sa.Boolean,
             nullable=False,
-            server_default="False"
+            server_default='False'
         ),
-        # sa.Column("salt", sa.Text, nullable=False),
-        sa.Column("password", sa.Text, nullable=False),
+        sa.Column('password', sa.Text, nullable=False),
         sa.Column(
-            "is_active",
+            'is_active',
             sa.Boolean(),
             nullable=False,
-            server_default="True"
+            server_default='True'
         ),
         sa.Column(
-            "is_superuser",
+            'is_superuser',
             sa.Boolean(),
             nullable=False,
-            server_default="False"
+            server_default='False'
         ),
         sa.Column(
-            "created_at",
+            'created_at',
             sa.TIMESTAMP(timezone=True),
             server_default=sa.func.now(),
             nullable=False,
             index=False,
         ),
         sa.Column(
-            "updated_at",
+            'updated_at',
             sa.TIMESTAMP(timezone=True),
             server_default=sa.func.now(),
             nullable=False,

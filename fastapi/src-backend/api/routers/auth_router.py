@@ -19,7 +19,7 @@ auth_router: APIRouter = APIRouter(
     response_model=TokenDto,
     status_code=status.HTTP_201_CREATED
 )
-async def create_user_token_(
+async def create_user_token_fastapi(
     user_form: OAuth2PasswordRequestForm = Depends(
         OAuth2PasswordRequestForm),
     auth_srv: AuthService = Depends(AuthService)
@@ -32,7 +32,7 @@ async def create_user_token_(
         token: str = auth_srv.create_user_token(user)
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message
         )
     return TokenDto(
@@ -46,7 +46,7 @@ async def create_user_token_(
     response_model=TokenDto,
     status_code=status.HTTP_201_CREATED
 )
-async def create_user_token_(
+async def create_user_token(
     user: UserDto,
     auth_srv: AuthService = Depends(AuthService)
 ) -> TokenDto:
@@ -54,7 +54,7 @@ async def create_user_token_(
         token: str = auth_srv.create_user_token(user)
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message
         )
     return TokenDto(
@@ -69,5 +69,4 @@ async def create_user_token_(
     status_code=status.HTTP_200_OK
 )
 async def get_user_from_token(user: UserBaseDto = Depends(get_user_from_token)) -> UserBaseDto:
-    print(user.username)
     return user

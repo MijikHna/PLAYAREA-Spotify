@@ -47,7 +47,7 @@ export default defineComponent({
     const apps: App[] = [
       {
         name: "Spotify",
-        url: "/spotify",
+        url: "/spotify/player",
         image: spotifyImgUrl,
       },
       {

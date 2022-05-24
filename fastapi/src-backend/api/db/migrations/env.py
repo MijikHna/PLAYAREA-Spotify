@@ -1,6 +1,8 @@
 import pathlib
 import sys
+
 import alembic
+
 from sqlalchemy import engine_from_config, pool
 
 from logging.config import fileConfig
@@ -13,9 +15,10 @@ import logging
 # append the app directory to the path here so that config can be imported easily
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[3]))
 
-from api.core.config_fastapi import Playarea2Config, get_playarea2_config
+from api.core.config_fastapi import PlayareaConfig, get_playarea_config
 
-playarea2_config: Playarea2Config = get_playarea2_config()
+
+playarea_config: PlayareaConfig = get_playarea_config()
 
 # Alembic Config object, which provides access to values within the .ini file
 alembic_config = alembic.context.config
@@ -33,7 +36,7 @@ def run_migrations_online() -> None:
     connectable = alembic_config.attributes.get("connection", None)
     alembic_config.set_main_option(
         "sqlalchemy.url",
-        str(playarea2_config.postgres_url)
+        str(playarea_config.postgres_url)
     )
 
     if connectable is None:
@@ -57,7 +60,7 @@ def run_migrations_offline() -> None:
     """
     Run migrations in 'offline' mode.
     """
-    alembic.context.configure(url=str(playarea2_config.postgres_url))
+    alembic.context.configure(url=str(playarea_config.postgres_url))
 
     with alembic.context.begin_transaction():
         alembic.context.run_migrations()

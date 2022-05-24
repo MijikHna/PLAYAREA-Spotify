@@ -1,6 +1,7 @@
 <template>
+
   <header>
-    <nav>
+    <nav class="fixed-top">
       <Menubar :model="menuItems" class="navbar rounded-0">
         <template #start>
           <router-link to="/" class="navbar-brand">
@@ -49,7 +50,7 @@ export default defineComponent({
       {
         label: "Spotify",
         icon: "pi pi-fw pi-play",
-        url: "/spotify"
+        url: "/spotify/player"
       },
       {
         label: "Excel",
@@ -75,16 +76,18 @@ export default defineComponent({
 
       return store.state.auth.activeUser;
     });
-    const logout = function(){
-      const expiredDate = new Date();
 
-      document.cookie = `Authorization=''; expires=${expiredDate.toUTCString()}`
+    const logout = function(){
+      const expiredDate = new Date(0);
+
+      document.cookie = `Authorization=; expires=${expiredDate.toUTCString()}`
 
       store.commit("setActiveUser", null);
       store.commit("setAuth", false);
 
       router.push("/login")
     }
+
     return {
       menuItems,
       isAuthenticated,

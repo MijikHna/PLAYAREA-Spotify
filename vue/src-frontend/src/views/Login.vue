@@ -18,6 +18,22 @@
               </div>
               <Button label="Login" @click="login" class="mt-3" />
             </div>
+            <Divider />
+            <div>
+              <div>
+                <span>You don't have an account</span>
+              </div>
+              <div class="mt-2">
+                <Button
+                  label="Create an account"
+                  @click="showRegisterDialog = !showRegisterDialog">
+                </Button>
+                <RegisterDialog
+                  :show="showRegisterDialog"
+                  @hide="showRegisterDialog=false"
+                />
+              </div>
+            </div>
           </template>
         </Card>
       </div>
@@ -30,6 +46,9 @@ import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Button from 'primevue/button';
+import Divider from 'primevue/divider';
+
+import RegisterDialog from '@/components/Base/RegisterDialog.vue'
 
 import {defineComponent, computed, ref } from "vue";
 import { Store, useStore } from 'vuex';
@@ -38,6 +57,7 @@ import { Buffer } from 'buffer';
 import axios from 'axios';
 import { Router, useRouter } from 'vue-router';
 import { DecodesUserToken } from '@/interfaces/baseInterfaces';
+import RegisterDialog from '../components/Base/RegisterDialog.vue';
 
 export default defineComponent({
   name: "Login",
@@ -46,19 +66,23 @@ export default defineComponent({
     InputText,
     Password,
     Button,
-  },
+    Divider,
+    RegisterDialog
+},
   setup(){
+    //global
     const store: Store<any> = useStore();
     const router: Router = useRouter()
 
-
+    //data
     const userName = ref("");
     const userPassword = ref("");
-
     const BASE_URL = computed(() => {
       return process.env.VUE_APP_BACKEND_URL
-    })
+    });
+    const showRegisterDialog = ref(false);
 
+    //methods
     const login = async function() {
       if (!userName && !userPassword ) {
         console.log("fill the fields");
@@ -86,7 +110,7 @@ export default defineComponent({
         store.commit("setAuth", true);
         // store.commit("setActiveUserLogoutTimer", logoutTimerId)
 
-        router.push({name: 'Home'});
+        router.push({name: 'home'});
       }
       catch(e) {
         console.log(e)
@@ -94,8 +118,11 @@ export default defineComponent({
     }
 
     return {
+      //data
       userName,
       userPassword,
+      showRegisterDialog,
+      //methods
       login
     }
   }

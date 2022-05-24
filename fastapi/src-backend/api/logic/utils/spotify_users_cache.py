@@ -1,15 +1,13 @@
-from typing import List
-from pydantic import BaseModel
+from datetime import datetime
+from typing import List, Optional
 
-
-class SpotifyUser(BaseModel):
-    user_id: int
-    user_token: str
+from api.logic.dto.spotify_dto import SpotifyCachedUser
+from api.logic.dto.user_dto import UserBaseDto
 
 
 class SpotifyUsersCache:
     _instance: 'SpotifyUsersCache' = None
-    cached_users: List[SpotifyUser] = []
+    __cached_users: List[SpotifyCachedUser] = []
 
     @staticmethod
     def get_instance():
@@ -24,21 +22,62 @@ class SpotifyUsersCache:
         else:
             SpotifyUsersCache._instance = self
 
-    def add_user_to_cache(self, token: str) -> None:
-        if not self.cached_users:
-            self.cached_users.append(
-                SpotifyUser(
-                    user_id=0,
-                    user_token=token
-                )
-            )
+    def find_cached_user_by_login_state(self, state: str) -> Optional[SpotifyCachedUser]:
+        for user in self.__cached_users:
+            if (user.spotify_login_state == state):
+                return SpotifyCachedUser.parse_obj(user)
 
-            return
+        return None
 
-        self.cached_users[0] = SpotifyUser(
-            user_id=0,
-            user_token=token
-        )
+    def find_cached_user_by_user_id(self, user_id: int) -> Optional[SpotifyCachedUser]:
+        for user in self.__cached_users:
+            if (user.user_id == user_id):
+                return SpotifyCachedUser.parse_obj(user)
 
-    def get_cached_user_token(self, user_id: int):
-        return self.cached_users[user_id].user_token
+        return None
+
+    def update_cached_user(self, user: SpotifyCachedUser) -> bool:
+        if user.user_token is None:
+            return False
+
+        for cached_user in self.__cached_users:
+            if (cached_user.user_id == user.user_id):
+                print(user.user_token.access_token)
+
+                cached_user.spotify_login_state = None
+                cached_user.user_token = user.user_token
+
+                print(cached_user.user_token.access_token)
+                print(len(self.__cached_users))
+
+                return True
+
+        return False
+
+    def add_user_to_cache(
+        self,
+        user: SpotifyCachedUser
+    ) -> bool:
+        self.__cached_users.append(user)
+
+        return True
+
+    def get_cached_user_token(self, user: UserBaseDto) -> Optional[SpotifyCachedUser]:
+        for cached_user in self.__cached_users:
+            if cached_user.user_id == user.id:
+                cached_user.last_token_request = datetime.now()
+                return SpotifyCachedUser.parse_obj(cached_user)
+
+        return None
+
+    def delete_cached_user(self, user: UserBaseDto) -> bool:
+        for cached_user in self.__cached_users:
+            if cached_user.user_id == user.id:
+                self.__cached_users.remove(cached_user)
+
+                print(len(self.__cached_users))
+
+                return True
+
+        # eventually User not Found Exception
+        return False

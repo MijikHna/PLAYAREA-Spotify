@@ -17,6 +17,7 @@ module.exports = {
     ecmaVersion: 2021,
   },
   rules: {
+    quotes: "single",
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
     "vue/no-multiple-template-root": "off",

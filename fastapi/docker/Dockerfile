@@ -16,6 +16,10 @@ COPY ./requirements.txt /cstm/requirements.txt
 
 RUN python3 -m pip install --no-cache-dir -r /cstm/requirements.txt
 
+COPY ./entrypoint.sh /scripts/entrypoint.sh
+
+ENTRYPOINT [ "/scripts/entrypoint.sh" ]
+
 # --------------------------------
 
 FROM base as dev

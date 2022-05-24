@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from api.core.config_fastapi import Playarea2Config, get_playarea2_config
+from api.core.config_fastapi import PlayareaConfig, get_playarea_config
 
 
-playarea2_config: Playarea2Config = get_playarea2_config()
-db_engine = create_engine(playarea2_config.postgres_url)
+playarea_config: PlayareaConfig = get_playarea_config()
+db_engine = create_engine(playarea_config.postgres_url)
 
 DBSession = sessionmaker(
     autocommit=False,

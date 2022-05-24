@@ -2,7 +2,7 @@
   <footer
     class="footer mt-auto py-3 footer-bg-color"
   >
-    Not Yet Implemented
+    PLAYAREA 2 APP. This App contains following Apps <router-link :to="{name: 'spotify'}">Spotify</router-link>, <router-link :to="{name: 'excel'}">Excel</router-link>
   </footer>
 </template>
 
