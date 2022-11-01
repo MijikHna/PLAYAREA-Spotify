@@ -1,27 +1,15 @@
 from typing import Dict, Any
+from api.db.models.profile_dao import ProfileDao
 
 from api.db.models.user_dao import UserDao
 from api.logic.dto.user_dto import UserBaseDto, UserCreateDto, UserDto
 
-from api.db.db_config import DBSession
-
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
-from fastapi import Depends
-
-
-def get_db():
-    db: Session = DBSession()
-    try:
-        yield db
-    except:
-        db.close()
-
 
 class UserRepository:
-    def __init__(self, db_session: Session = Depends(get_db)) -> None:
-        self.__db_session = db_session
+    def __init__(self) -> None:
         self.__password_context = CryptContext(
             schemes=['bcrypt'],
             deprecated='auto'
@@ -32,38 +20,67 @@ class UserRepository:
 
     def create_user(
         self,
-        new_user: UserCreateDto,
+        db_session: Session,
+        user: UserCreateDto
     ) -> UserDao:
-        user: UserDao = UserDao(
-            id=new_user.id,
-            username=new_user.username,
-            email=new_user.email,
-            email_verified=new_user.email_verified,
-            password=self.__hash_password(new_user.password)
-        )
+        if (user.id is not None):
+            # raise
+            return
 
-        self.__db_session.add(user)
-        self.__db_session.commit()
+        try:
+            user_db: UserDao = UserDao(
+                username=user.username,
+                email=user.email,
+                password=self.__hash_password(
+                    user.password) if user.password == user.password_confirm else None,
+                is_superuser=user.is_superuser,
+            )
 
-        return user
+            profile_db: ProfileDao = ProfileDao(
+                theme=user.profile.theme,
+                image=user.profile.image,
+            )
+            user_db.profile = profile_db
+
+            db_session.add(user_db)
+            db_session.flush()
+
+            profile_db.user_id = user_db.id
+            db_session.add(profile_db)
+            db_session.flush()
+        except Exception as e:
+            raise e
+
+        return user_db
 
     def get_user_by_unique_identifier(
         self,
-        user: UserDto
+        db_session: Session,
+        user_identifiers: Dict[str, Any]
     ) -> UserDao:
         # also filter for email
-        user_in_db: UserDao = self.__db_session.query(
-            UserDao
-        ).filter(UserDao.username == user.username).one()
+        user_db: UserDao = None
 
-        return user_in_db
+        if user_identifiers.email:
+            user_db = db_session.query(
+                UserDao
+            ).filter(UserDao.email == user_identifiers.email).one()
+
+            return user_db
+        elif user_identifiers.username:
+            user_db = db_session.query(
+                UserDao
+            ).filter(UserDao.username == user_identifiers.username).one()
+
+            return user_db
 
     def get_user_by_id(
         self,
-        user_id: UserBaseDto,
+        db_session: Session,
+        user_id: int
     ) -> UserDao:
-        user_in_db: UserDao = self.__db_session.query(
+        user_db = db_session.query(
             UserDao
         ).filter(UserDao.id == user_id).one()
 
-        return user_in_db
+        return user_db

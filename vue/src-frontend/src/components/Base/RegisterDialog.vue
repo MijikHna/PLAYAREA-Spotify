@@ -15,8 +15,8 @@
     <div class="container px-5">
       <div class="row text-start">
         <div class="row my-2">
-            <InputText id="username" type="text" v-model="userCreate.username" />
-            <label for="username">Username</label>
+          <InputText id="username" type="text" v-model="userCreate.username" />
+          <label for="username">Username</label>
         </div>
         <div class="row my-2">
           <InputText id="email" type="text" v-model="userCreate.email" />
@@ -27,7 +27,11 @@
           <label for="password">Password</label>
         </div>
         <div class="row my-2">
-          <Password class="px-0" id="password_confirm" v-model="userCreate.password_confirm" />
+          <Password
+            class="px-0"
+            id="password_confirm"
+            v-model="userCreate.password_confirm"
+          />
           <label for="password">Confirm password</label>
         </div>
       </div>
@@ -51,52 +55,50 @@
 </template>
 
 <script setup lang="ts">
-import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Password from 'primevue/password';
-import { useToast } from 'primevue/usetoast';
+import Dialog from "primevue/dialog";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Password from "primevue/password";
+import { useToast } from "primevue/usetoast";
 
-import {ref, Ref} from 'vue';
+import { ref, Ref } from "vue";
 
-import {User, UserCreate} from '@/interfaces/baseInterfaces'
-import { BackendHttpService } from '@/services/BackendHttpService';
+import { User, UserCreate } from "@/interfaces/baseInterfaces";
+import { BackendHttpService } from "@/services/BackendHttpService";
 
 defineProps<{
-  show: boolean,
-}>()
+  show: boolean;
+}>();
 
 // global
 const toast = useToast();
 
-
 // data
 const userCreate: Ref<UserCreate> = ref({
-  username: '',
-  email: '',
-  password: '',
-  password_confirm: ''
+  username: "",
+  email: "",
+  password: "",
+  password_confirm: "",
 });
 
 const dialog = ref();
 
 // methods
-const registerUser = async function(){
+const registerUser = async function () {
   dialog.value.close();
 
   try {
-    const response = await BackendHttpService.createUser(userCreate.value)
+    const response = await BackendHttpService.createUser(userCreate.value);
     const user: User = response.data;
     toast.add({
-      severity: 'success',
+      severity: "success",
       summary: `You account has been created`,
       detail: `Username: ${user.username}, Email: ${user.email}`,
       life: 5000,
     });
-  }
-  catch(e) {
+  } catch (e) {
     toast.add({
-      severity: 'error',
+      severity: "error",
       summary: `You account couldn't be created`,
       detail: `????`,
       life: 5000,
@@ -104,5 +106,5 @@ const registerUser = async function(){
 
     return;
   }
-}
+};
 </script>

@@ -1,7 +1,7 @@
 {
   "singleQuote": false,
   "semi": true,
-  "vueIndentScriptAndStyle": false,
+  "vueIndentScriptAndStyle": true,
   "trailingComma": "all",
   "tabWidth": 2
 }

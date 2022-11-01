@@ -8,6 +8,9 @@ from requests.models import Response
 
 from fastapi import Depends
 
+from sqlalchemy.orm import Session
+
+
 from api.core.config_fastapi import PlayareaConfig, get_playarea_config
 
 from api.logic.dto.spotify_dto import SpotifyCachedUser
@@ -16,8 +19,8 @@ from api.logic.utils.spotify_users_cache import SpotifyUsersCache
 from api.shared.exceptions.cached_user_not_found import CachedUserNotFound
 
 playarea_config: PlayareaConfig = get_playarea_config()
-MINUTES_5: int = 3 * 60 # 5 * 60
-RENEW_TOKEN_PERIOD: int = 3 * 60 # 3600 - 3 * 60
+MINUTES_5: int = 3 * 60  # 5 * 60
+RENEW_TOKEN_PERIOD: int = 3 * 60  # 3600 - 3 * 60
 
 
 class SpotifyService:
@@ -29,6 +32,7 @@ class SpotifyService:
 
     def find_cached_spotify_user_by_spotify_login_state(
         self,
+        db_session: Session,
         state: str
     ) -> Optional[SpotifyCachedUser]:
         cached_user: SpotifyCachedUser = self.__spotify_users_cache.find_cached_user_by_login_state(
@@ -39,7 +43,8 @@ class SpotifyService:
 
     def add_user_to_cache(
         self,
-        spotify_user: SpotifyCachedUser,
+        db_session: Session,
+        spotify_user: SpotifyCachedUser
     ) -> bool:
         # eventually throw exception
         if not spotify_user.spotify_login_state or spotify_user.user_token is not None:
@@ -49,19 +54,21 @@ class SpotifyService:
 
     def update_cached_user(
         self,
+        db_session: Session,
         spotify_user: SpotifyCachedUser
     ) -> bool:
         return self.__spotify_users_cache.update_cached_user(spotify_user)
 
-    def get_user_token(self, user: UserBaseDto) -> SpotifyCachedUser:
+    def get_user_token(self, db_session: Session, user: UserBaseDto) -> SpotifyCachedUser:
         return self.__spotify_users_cache.get_cached_user_token(user)
 
-    def delete_cached_user(self, user: UserBaseDto) -> bool:
+    def delete_cached_user(self, db_session: Session, user: UserBaseDto) -> bool:
         return self.__spotify_users_cache.delete_cached_user(user)
 
     def refresh_user_token(
         self,
-        user: UserBaseDto,
+        db_session: Session,
+        user: UserBaseDto
     ):
         print('refresh started')
         if user is None:

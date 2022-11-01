@@ -1,71 +1,31 @@
+import { defineStore, StoreDefinition } from "pinia";
 import { SpotifyState } from "@vue/runtime-dom";
 
-export const spotify = {
+export const useSpotifyStore: StoreDefinition = defineStore("spotifyStore", {
   state: () => ({
-    // Spotify Player
-    spotifyAuthSuccess: false,
-    spotifyPlayerSDKDOMElem: null,
-    spotifyPlayer: null,
+    // Player
+    spotifyAuthSuccess: false as boolean,
+    spotifyPlayerDOMElem: null as any,
+    spotifyPlayer: null as any,
     // Devices
-    thisPlayerActive: false,
-    devices: [],
-    // Playlist
-    currentTrack: null,
-    nextTracks: [],
-    playingContext: null,
-    playList: null,
+    playerActive: false as boolean,
+    devices: [] as any[],
+    //Playlist:
+    currentTrack: null as any,
+    nextTracks: [] as any[],
+    playingContext: null as any,
+    playList: null as any,
   }),
-  getters: {
-    getSpotifyAuthSuccess(state: SpotifyState) {
-      return state.spotifyAuthSuccess;
-    },
-  },
-  mutations: {
-    // Spotify Player
-    setSpotifyAuthSuccess(state: SpotifyState, authSuccess: boolean) {
-      state.spotifyAuthSuccess = authSuccess;
-    },
-    setSpotifyPlayerDOMElem(state: SpotifyState, spotifyElem: HTMLElement) {
-      state.spotifyPlayerSDKDOMElem = spotifyElem;
-    },
-    setSpotifyPlayer(state: SpotifyState, spotifyPlayer: any) {
-      state.spotifyPlayer = spotifyPlayer;
-    },
-    // Devices
-    setThisPlayerActive(state: SpotifyState, active: any) {
-      state.thisPlayerActive = active;
-    },
-    setDevices(state: SpotifyState, devices: any[]) {
-      state.devices = devices;
-    },
-
-    // Playslist
-    setCurrentTrack(state: SpotifyState, currentTrack: any) {
-      state.currentTrack = currentTrack;
-    },
-    setNextTracks(state: SpotifyState, nextTracks: any[]) {
-      state.nextTracks = nextTracks;
-    },
-    setPlayingContext(state: SpotifyState, context: any) {
-      state.playingContext = context;
-    },
-    setPlayList(state: SpotifyState, playList: any) {
-      state.playList = playList;
-    },
-  },
   actions: {
-    resetSpotifyPlayer({ commit }) {
-      // Playlist
-      commit("setPlayingContext", null);
-      commit("setNextTracks", []);
-      commit("setCurrentTrack", null);
-      // Devices
-      commit("setDevices", []);
-      commit("setThisPlayerActive", false);
-      // SpotifyPlayer
-      commit("setSpotifyPlayer", null);
-      commit("setSpotifyPlayerDOMElem", null);
-      commit("setSpotifyAuthSuccess", false);
+    resetSpotifyPlayer() {
+      this.playList = null;
+      this.playingContext = null;
+      this.nextTracks = [];
+      this.currentTrack = null;
+      this.playerActive = false;
+      this.spotifyPlayer = null;
+      this.spotifyPlayerDOMElem = null;
+      this.spotifyAuthSuccess = false;
     },
   },
-};
+});

@@ -1,7 +1,7 @@
 import { DecodesUserToken, UserToken } from "@/interfaces/baseInterfaces";
 import { Buffer } from "buffer";
 
-export class UtilsServcie {
+export class UtilsService {
   static getDecodedAuthCookie = (): DecodesUserToken => {
     const cookies = document.cookie.split("; ");
 

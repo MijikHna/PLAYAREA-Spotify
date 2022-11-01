@@ -4,12 +4,6 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-
-export default defineComponent({
-  name: "Visualizer",
-
-});</script>
+<script lang="ts"></script>
 
 <style scoped></style>

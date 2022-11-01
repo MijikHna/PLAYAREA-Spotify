@@ -3,14 +3,9 @@
     <div class="row px-0 mx-0">
       <Menu />
     </div>
-
     <div class="card">
         <TabMenu :model="tabMenuItems" class-/>
     </div>
-    <!-- <KeepAlive include="Player">
-      <router-view/>
-    </KeepAlive> -->
-
     <router-view v-slot="{ Component }">
       <KeepAlive>
         <component :is="Component"/>

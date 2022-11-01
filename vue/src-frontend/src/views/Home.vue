@@ -1,10 +1,6 @@
 <template>
   <div class="row m-0">
-    <div
-      class="col-md-6 col-lg-4"
-      v-for="(app, index) in apps"
-      :key="index"
-    >
+    <div class="col-md-6 col-lg-4" v-for="(app, index) in apps" :key="index">
       <Card class="m-2">
         <template #header>
           <img
@@ -26,53 +22,40 @@
   </div>
 </template>
 
-<script lang="ts">
-import { App } from "@/interfaces/baseInterfaces";
-
-import spotifyImgUrl from "@/assets/images/spotify-icon.png";
-import excelImgUrl from "@/assets/images/excel-icon.png";
-
-import { defineComponent } from "vue";
-import { useRouter, Router } from 'vue-router'
-
+<script setup lang="ts">
 import Card from "primevue/card";
 import Button from "primevue/button";
 
-export default defineComponent({
-  name: "Home",
-  components: { Card, Button },
-  setup(){
-    const router: Router = useRouter();
+import { useRouter, Router } from "vue-router";
 
-    const apps: App[] = [
-      {
-        name: "Spotify",
-        url: "/spotify/player",
-        image: spotifyImgUrl,
-      },
-      {
-        name: "Excel",
-        url: "/excel",
-        image: excelImgUrl,
-      },
-    ]
+import { App } from "@/interfaces/baseInterfaces";
 
-    const goTo = function(url: string){
-      router.push({path: url});
-    }
+import spotifyImgUrl from "@/assets/images/spotify-icon.png";
+import sheetImgUrl from "@/assets/images/sheet-icon.png";
 
-    return {
-      //attr
-      apps,
-      //metthods
-      goTo
-    };
+const router: Router = useRouter();
+
+const apps: App[] = [
+  {
+    name: "Spotify",
+    url: "/spotify/player",
+    image: spotifyImgUrl,
   },
-});
+  {
+    name: "Sheet",
+    url: "/sheet",
+    image: sheetImgUrl,
+  },
+];
+
+const goTo = function (url: string) {
+  router.push({ path: url });
+};
 </script>
 
 <style scoped>
 .image-size {
   max-width: 100px;
   max-height: 100px;
-}</style>
+}
+</style>

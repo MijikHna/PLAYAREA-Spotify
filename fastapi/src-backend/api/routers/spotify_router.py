@@ -8,6 +8,8 @@ from requests.models import Response
 from fastapi import APIRouter, status, Depends
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from sqlalchemy.orm import Session
+
 from api.core.config_fastapi import PlayareaConfig, get_playarea_config
 
 from api.logic.dto.user_dto import UserBaseDto
@@ -16,6 +18,7 @@ from api.logic.dto.spotify_dto import SpotifyCallbackUserAccessTokenDto
 from api.logic.services.spotify_service import SpotifyService, RENEW_TOKEN_PERIOD
 from api.logic.services.user_service import UserService
 from api.logic.utils.auth import get_user_from_token
+from api.logic.utils.db_manager import open_db_session
 
 from api.shared.other.other import generate_random_string
 from api.shared.other.url_query_params import UrlQueryParams
@@ -34,7 +37,8 @@ spotify_router: APIRouter = APIRouter(
 )
 async def login_to_spotify(
     user: UserBaseDto = Depends(get_user_from_token),
-    spotify_service: SpotifyService = Depends(SpotifyService)
+    spotify_service: SpotifyService = Depends(SpotifyService),
+    db_session: Session = Depends(open_db_session)
 ) -> JSONResponse:
     state: str = generate_random_string(16)
 
@@ -55,7 +59,7 @@ async def login_to_spotify(
         user_token=None,
     )
 
-    if not spotify_service.add_user_to_cache(spotify_user):
+    if not spotify_service.add_user_to_cache(db_session, spotify_user):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             details='Internal Server Error'
@@ -77,7 +81,8 @@ async def login_to_spotify(
 async def login_to_spotify_callback(
     spotify_callback_code_dto: SpotifyCallbackCodeDto = Depends(),
     spotify_service: SpotifyService = Depends(SpotifyService),
-    user_service: UserService = Depends(UserService)
+    user_service: UserService = Depends(UserService),
+    db_session: Session = Depends(open_db_session)
 ) -> RedirectResponse:
     if spotify_callback_code_dto is not None:
         form_data: Dict[str, Any] = {
@@ -105,6 +110,7 @@ async def login_to_spotify_callback(
         )
 
         cached_user: SpotifyCachedUser = spotify_service.find_cached_spotify_user_by_spotify_login_state(
+            db_session,
             spotify_callback_code_dto.state
         )
 
@@ -112,15 +118,17 @@ async def login_to_spotify_callback(
 
         print((cached_user))
 
-        spotify_service.update_cached_user(cached_user)
+        spotify_service.update_cached_user(db_session, cached_user)
 
         app_user: UserBaseDto = user_service.find_user_by_id(
-            user_id=cached_user.user_id)
+            db_session,
+            cached_user.user_id
+        )
 
         update_token_timer: Timer = Timer(
             RENEW_TOKEN_PERIOD,
             spotify_service.refresh_user_token,
-            [app_user]
+            [app_user],
         )
         update_token_timer.start()
 
@@ -132,10 +140,12 @@ async def login_to_spotify_callback(
 )
 async def get_token(
     user: UserBaseDto = Depends(get_user_from_token),
-    spotify_service: SpotifyService = Depends(SpotifyService)
+    spotify_service: SpotifyService = Depends(SpotifyService),
+    db_session: Session = Depends(open_db_session)
 ) -> JSONResponse:
     try:
-        cached_user: SpotifyCachedUser = spotify_service.get_user_token(user)
+        cached_user: SpotifyCachedUser = spotify_service.get_user_token(
+            db_session, user)
         user_token: str = cached_user.user_token.access_token
     except:
         return JSONResponse(content={'token:': 'Token not found'}, status_code=400)
@@ -151,6 +161,7 @@ async def get_token(
 )
 def logout_spotify(
     user: UserBaseDto = Depends(get_user_from_token),
-    spotify_service: SpotifyService = Depends(SpotifyService)
+    spotify_service: SpotifyService = Depends(SpotifyService),
+    db_session: Session = Depends(open_db_session)
 ) -> None:
-    return spotify_service.delete_cached_user(user)
+    return spotify_service.delete_cached_user(db_session, user)

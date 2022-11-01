@@ -40,15 +40,14 @@ def create_updated_at_trigger() -> None:
 def create_users_table() -> None:
     op.create_table(
         'users',
-        sa.Column('id', sa.BigInteger, primary_key=True),
+        sa.Column('id', sa.Integer, primary_key=True),
         sa.Column(
             'username',
             sa.Text,
             unique=True,
             nullable=False,
-            index=True
         ),
-        sa.Column('email', sa.Text, unique=True, nullable=False, index=True),
+        sa.Column('email', sa.Text, unique=True, nullable=False),
         sa.Column(
             'email_verified',
             sa.Boolean,
@@ -73,20 +72,18 @@ def create_users_table() -> None:
             sa.TIMESTAMP(timezone=True),
             server_default=sa.func.now(),
             nullable=False,
-            index=False,
         ),
         sa.Column(
             'updated_at',
             sa.TIMESTAMP(timezone=True),
             server_default=sa.func.now(),
             nullable=False,
-            index=False,
         ),
     )
 
     op.execute(
         """
-        CREATE TRIGGER update_user_modtime
+        CREATE TRIGGER update_modtime
             BEFORE UPDATE
             ON users
             FOR EACH ROW

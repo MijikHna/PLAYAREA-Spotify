@@ -6,14 +6,16 @@ from passlib.context import CryptContext
 
 from fastapi import Depends
 
-from api.core.config_fastapi import PlayareaConfig, get_playarea_config
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import NoResultFound
 
+from api.core.config_fastapi import PlayareaConfig, get_playarea_config
+from api.db.db_config import DBSession
 from api.db.models.user_dao import UserDao
 from api.db.repositories.user_repository import UserRepository
-
 from api.logic.dto.token_dto import TokenDataDto
 from api.logic.dto.user_dto import UserDto, UserBaseDto
-
+from api.logic.utils.db_manager import open_db_session
 from api.shared.exceptions.incorrect_password_exception import IncorrectPasswordException
 from api.shared.exceptions.user_not_found_exception import UserNotFoundException
 
@@ -34,22 +36,28 @@ class AuthService:
     def _hash_password(self, password):
         return self.__password_context.hash(password)
 
-    def _authenticate_user(self, user: UserDto) -> UserDto:
-        user_in_db: Optional[UserDao] = self.__user_repo.get_user_by_unique_identifier(
-            user
-        )
-
-        if user_in_db is None:
+    def _authenticate_user(
+        self,
+        db_session: Session,
+        user: UserDto,
+    ) -> UserDto:
+        try:
+            user_db: Optional[UserDao] = self.__user_repo.get_user_by_unique_identifier(
+                db_session,
+                user
+            )
+        except NoResultFound:
             raise UserNotFoundException
 
-        if not self._verify_password(user.password, user_in_db.password):
+        if user_db is None:
+            raise UserNotFoundException
+
+        if not self._verify_password(user.password, user_db.password):
             raise IncorrectPasswordException
 
-        return True
-
-    def create_user_token(self, user: UserDto) -> str:
+    def create_user_token(self, db_session: Session, user: UserDto) -> str:
         try:
-            self._authenticate_user(user)
+            self._authenticate_user(db_session, user)
         except Exception as e:
             raise e
 
@@ -69,19 +77,26 @@ class AuthService:
 
         return encoded_jwt
 
-    def get_user_from_token(self, token: str) -> UserBaseDto:
+    def get_user_from_token(
+        self,
+        db_session: Session,
+        token: str,
+    ) -> UserBaseDto:
         try:
             decoded_token = jwt.decode(
                 token,
                 playarea_config.secret_key,
                 algorithms=[playarea_config.algorithm]
             )
-            current_user: UserDto = UserDto(
+
+            user: UserDto = UserDto(
                 username=decoded_token.get('username'),
-                password='temp'
+                password=''
             )
-            found_user_in_db: UserDao = self.__user_repo.get_user_by_unique_identifier(
-                current_user
+
+            user_db: UserDao = self.__user_repo.get_user_by_unique_identifier(
+                db_session,
+                user
             )
         except JWTError:
             raise UserNotFoundException
@@ -89,9 +104,9 @@ class AuthService:
             raise e
 
         user: UserBaseDto = UserBaseDto(
-            id=found_user_in_db.id,
-            username=found_user_in_db.username,
-            email=found_user_in_db.email
+            id=user_db.id,
+            username=user_db.username,
+            email=user_db.email
         )
 
         return user

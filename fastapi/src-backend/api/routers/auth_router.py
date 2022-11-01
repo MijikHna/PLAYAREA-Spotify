@@ -1,12 +1,14 @@
 from fastapi import APIRouter, status, Depends, HTTPException
-
 from fastapi.security import OAuth2PasswordRequestForm
+
+from sqlalchemy.orm import Session
 
 from api.logic.dto.token_dto import TokenDto
 from api.logic.dto.user_dto import UserBaseDto, UserDto
 from api.logic.services.auth_service import AuthService
 
 from api.logic.utils.auth import get_user_from_token
+from api.logic.utils.db_manager import open_db_session
 
 auth_router: APIRouter = APIRouter(
     prefix='/api/auth',
@@ -21,15 +23,17 @@ auth_router: APIRouter = APIRouter(
 )
 async def create_user_token_fastapi(
     user_form: OAuth2PasswordRequestForm = Depends(
-        OAuth2PasswordRequestForm),
-    auth_srv: AuthService = Depends(AuthService)
+        OAuth2PasswordRequestForm
+    ),
+    auth_srv: AuthService = Depends(AuthService),
+    db_session: Session = Depends(open_db_session)
 ) -> TokenDto:
     user: UserDto = UserDto(
         username=user_form.username,
         password=user_form.password
     )
     try:
-        token: str = auth_srv.create_user_token(user)
+        token: str = auth_srv.create_user_token(db_session, user)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,10 +52,11 @@ async def create_user_token_fastapi(
 )
 async def create_user_token(
     user: UserDto,
-    auth_srv: AuthService = Depends(AuthService)
+    auth_srv: AuthService = Depends(AuthService),
+    db_session: Session = Depends(open_db_session)
 ) -> TokenDto:
     try:
-        token: str = auth_srv.create_user_token(user)
+        token: str = auth_srv.create_user_token(db_session, user)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -68,5 +73,7 @@ async def create_user_token(
     response_model=UserBaseDto,
     status_code=status.HTTP_200_OK
 )
-async def get_user_from_token(user: UserBaseDto = Depends(get_user_from_token)) -> UserBaseDto:
+async def get_user_from_token(
+    user: UserBaseDto = Depends(get_user_from_token)
+) -> UserBaseDto:
     return user

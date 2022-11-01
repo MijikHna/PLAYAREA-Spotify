@@ -35,6 +35,9 @@ export interface User {
   email: string;
 }
 
-export interface BaseState {
+export interface Profile {
+  id?: number;
   theme: string;
+  image: string;
+  user_id: number;
 }

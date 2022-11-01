@@ -29,7 +29,7 @@ class PlayareaConfig(BaseSettings):
 
     @validator('postgres_url', pre=False)
     def compound_postgres_url(cls, v, values, **kwargs):
-        return f"postgresql://{values['postgres_user']}:{values['postgres_password']}@{values['postgres_server']}:{values['postgres_port']}/{values['postgres_db']}"
+        return f"postgresql+psycopg2://{values['postgres_user']}:{values['postgres_password']}@{values['postgres_server']}:{values['postgres_port']}/{values['postgres_db']}"
 
 
 @lru_cache()
