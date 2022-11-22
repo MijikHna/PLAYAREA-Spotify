@@ -34,20 +34,15 @@ class UserRepository:
                 password=self.__hash_password(
                     user.password) if user.password == user.password_confirm else None,
                 is_superuser=user.is_superuser,
+                profile=ProfileDao(
+                  theme=user.profile.theme,
+                  image=user.profile.image,
+                )
             )
-
-            profile_db: ProfileDao = ProfileDao(
-                theme=user.profile.theme,
-                image=user.profile.image,
-            )
-            user_db.profile = profile_db
 
             db_session.add(user_db)
             db_session.flush()
 
-            profile_db.user_id = user_db.id
-            db_session.add(profile_db)
-            db_session.flush()
         except Exception as e:
             raise e
 

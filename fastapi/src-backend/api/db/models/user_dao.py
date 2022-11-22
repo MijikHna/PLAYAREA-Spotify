@@ -37,5 +37,5 @@ class UserDao(Base):
         server_default=func.now()
     )
 
-    profile = relationship('ProfileDao', back_populates='user')
+    profile = relationship('ProfileDao', back_populates='user', uselist=False)
     tables = relationship('TableDao', back_populates='user')

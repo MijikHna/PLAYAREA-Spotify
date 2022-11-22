@@ -13,7 +13,6 @@ class PlayareaConfig(BaseSettings):
     access_token_expire_minutes: int
     base_url: str
     backend_url: str
-    backend_url_debug: str
     postgres_server: str
     postgres_port: int
     postgres_user: str

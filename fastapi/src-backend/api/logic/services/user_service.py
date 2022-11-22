@@ -1,3 +1,4 @@
+from api.db.models.profile_dao import ProfileDao
 from fastapi import Depends
 
 from sqlalchemy.orm import Session

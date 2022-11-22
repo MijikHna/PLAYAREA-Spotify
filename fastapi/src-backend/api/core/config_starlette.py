@@ -16,7 +16,6 @@ class PlayareaConfig2:
         'SPOTIFY_CLIENT_SECRET', cast=Secret)
     BASE_URL: str = config('BASE_URL', cast=URL)
     BACKEND_URL: str = config('BACKEND_URL', cast=URL)
-    BACKEND_URL_DEBUG: str = config('BACKEND_URL_DEBUG', cast=URL)
     POSTGRES_SERVER: str = config(
         'POSTGRES_SERVER', cast=str, default="localhost")
     POSTGRES_PORT: str = config('POSTGRES_PORT', cast=str, default='5432')

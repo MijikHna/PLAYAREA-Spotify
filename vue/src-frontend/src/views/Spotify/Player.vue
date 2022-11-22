@@ -43,16 +43,6 @@
       return;
     }
 
-    // try {
-    //   const response: AxiosResponse  = await BackendHttpService.getSavedSpotifyToken();
-
-    //   if (response.status === 200){
-    //     spotifyStore.setSpotifyAuthSuccess(true);
-    //   }
-    // }catch(e){
-    //   return;
-    // }
-
     const spotifyPlayerSDKDOMElemTemp = document.createElement("script");
     spotifyPlayerSDKDOMElemTemp.setAttribute(
       "src",
@@ -65,7 +55,7 @@
     window.onSpotifyWebPlaybackSDKReady = () => {
       spotifyStore.spotifyPlayer = new window.Spotify.Player({
         name: "Playarea2 Web Playback",
-        getOAuthToken: async (cb) => {
+        getOAuthToken: async (cb: (token: string) => void) => {
           const response: AxiosResponse =
             await BackendHttpService.getSavedSpotifyToken();
           cb(response.data.token);

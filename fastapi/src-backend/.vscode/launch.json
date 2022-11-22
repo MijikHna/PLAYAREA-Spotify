@@ -14,5 +14,9 @@
       ],
       "justMyCode": true
     }
-  ]
+  ],
+  "files.exclude": {
+    "**/node_modulles": true,
+    "**/venv": true
+  }
 }

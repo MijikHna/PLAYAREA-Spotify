@@ -71,140 +71,143 @@
 </template>
 
 <script setup lang="ts">
-import { ref, Ref } from "vue";
-import { computed, ComputedRef } from "@vue/reactivity";
+  import { ref, Ref } from "vue";
+  import { computed, ComputedRef } from "@vue/reactivity";
 
-import Button from "primevue/button";
-import Menu from "primevue/menu";
-import OverlayPanel from "primevue/overlaypanel";
-import Slider from "primevue/slider";
-import { useToast } from "primevue/usetoast";
+  import Button from "primevue/button";
+  import Menu from "primevue/menu";
+  import OverlayPanel from "primevue/overlaypanel";
+  import Slider from "primevue/slider";
+  import { useToast } from "primevue/usetoast";
 
-import { useSpotifyStore } from "@/store/spotify";
+  import { useSpotifyStore } from "@/store/spotify";
 
-import { SpotifyHttpService } from "@/services/SpotifyHttpService";
+  import { SpotifyHttpService } from "@/services/SpotifyHttpService";
 
-import { IDeviceMenuEntry } from "@/interfaces/spotifyInterfaces";
+  import { IDeviceMenuEntry } from "@/interfaces/spotifyInterfaces";
 
-import { AxiosResponse } from "axios";
+  import { AxiosResponse } from "axios";
 
-// global
-const spotifyStore = useSpotifyStore();
-const toast = useToast();
+  // global
+  const spotifyStore = useSpotifyStore();
+  const toast = useToast();
 
-// template refs
-const deviceOp = ref(null);
-const volumeOp = ref(null);
+  // template refs
+  const deviceOp = ref(null);
+  const volumeOp = ref(null);
 
-//computed
-const spotifyAuthSuccess: ComputedRef<boolean> = computed(
-  () => spotifyStore.spotifyAuthSuccess,
-);
-const spotifyPlayer: ComputedRef<any> = computed(
-  () => spotifyStore.spotifyPlayer,
-);
+  //computed
+  const spotifyAuthSuccess: ComputedRef<boolean> = computed(
+    () => spotifyStore.spotifyAuthSuccess,
+  );
+  const spotifyPlayer: ComputedRef<any> = computed(
+    () => spotifyStore.spotifyPlayer,
+  );
 
-// data
-const playIcon: Ref<string> = ref("pi pi-play");
-const devices: Ref<any[]> = ref([]);
-const volumeLevel: Ref<number> = ref(50);
+  // data
+  const playIcon: Ref<string> = ref("pi pi-play");
+  const devices: Ref<any[]> = ref([]);
+  const volumeLevel: Ref<number> = ref(50);
 
-//methods
-const toggleDevices = function (event: Event): void {
-  if (!spotifyAuthSuccess.value) {
+  //methods
+  const toggleDevices = function (event: Event): void {
+    if (!spotifyAuthSuccess.value) {
+      deviceOp.value.toggle(event);
+      return;
+    }
+
+    // TODO: Progress spinner
+
+    SpotifyHttpService.getAvailableDevices()
+      .then((spotifyDevices) => {
+        const deviceMenuEntries: IDeviceMenuEntry[] = spotifyDevices.map(
+          (spotifyDevice) => {
+            return {
+              deviceId: spotifyDevice.id,
+              label: spotifyDevice.name,
+              icon: "pi pi-tablet",
+            };
+          },
+        );
+
+        deviceMenuEntries.forEach((device) => {
+          device.command = async function (): Promise<void> {
+            try {
+              const response: AxiosResponse =
+                await SpotifyHttpService.selectPlayer([device.deviceId]);
+
+              if (response.status === 204) {
+                spotifyStore.playerActive =
+                  device.label === spotifyPlayer.value._options.name;
+
+                toast.add({
+                  severity: "success",
+                  summary: `Select Player`,
+                  detail: `Player ${device.label} has been selected`,
+                  life: 5000,
+                });
+              }
+            } catch (e) {
+              toast.add({
+                severity: "error",
+                summary: `Select Player`,
+                detail: `Player ${device.label} couldn't be selected`,
+                life: 5000,
+              });
+            }
+          };
+        });
+
+        devices.value = deviceMenuEntries;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
     deviceOp.value.toggle(event);
-    return;
-  }
+  };
 
-  // TODO: Progress spinner
+  const toggleVolumePanel = function (event: Event) {
+    volumeOp.value.toggle(event);
+  };
 
-  SpotifyHttpService.getAvailableDevices().then((spotifyDevices) => {
-    const deviceMenuEntries: IDeviceMenuEntry[] = spotifyDevices.map(
-      (spotifyDevice) => {
-        return {
-          deviceId: spotifyDevice.id,
-          label: spotifyDevice.name,
-          icon: "pi pi-tablet",
-        };
-      },
-    );
+  const togglePlay = async function () {
+    const state = await spotifyPlayer.value.getCurrentState();
 
-    deviceMenuEntries.forEach((device) => {
-      device.command = async function (): Promise<void> {
-        try {
-          const response: AxiosResponse = await SpotifyHttpService.selectPlayer(
-            [device.deviceId],
-          );
+    if (!state) {
+      console.log("Another Spotify Player is playing");
+      return;
+    }
 
-          if (response.status === 204) {
-            spotifyStore.playerActive =
-              device.label === spotifyPlayer.value._options.name;
+    console.log(state);
 
-            toast.add({
-              severity: "success",
-              summary: `Select Player`,
-              detail: `Player ${device.label} has been selected`,
-              life: 5000,
-            });
-          }
-        } catch (e) {
-          toast.add({
-            severity: "error",
-            summary: `Select Player`,
-            detail: `Player ${device.label} couldn't be selected`,
-            life: 5000,
-          });
-        }
-      };
-    });
+    if (state.paused) {
+      playIcon.value = "pi pi-pause";
+    } else {
+      playIcon.value = "pi pi-play";
+    }
 
-    devices.value = deviceMenuEntries;
-  });
+    spotifyPlayer.value.togglePlay();
+  };
 
-  deviceOp.value.toggle(event);
-};
+  const playPreviousTrack = async function () {
+    await spotifyPlayer.value.previousTrack();
+  };
 
-const toggleVolumePanel = function (event: Event) {
-  volumeOp.value.toggle(event);
-};
+  const playNextTrack = async function () {
+    await spotifyPlayer.value.nextTrack();
+  };
 
-const togglePlay = async function () {
-  const state = await spotifyPlayer.value.getCurrentState();
-
-  if (!state) {
-    console.log("Another Spotify Player is playing");
-    return;
-  }
-
-  console.log(state);
-
-  if (state.paused) {
-    playIcon.value = "pi pi-pause";
-  } else {
-    playIcon.value = "pi pi-play";
-  }
-
-  spotifyPlayer.value.togglePlay();
-};
-
-const playPreviousTrack = async function () {
-  await spotifyPlayer.value.previousTrack();
-};
-
-const playNextTrack = async function () {
-  await spotifyPlayer.value.nextTrack();
-};
-
-const setVolume = async function (volume: number) {
-  if (!spotifyPlayer.value) {
-    return;
-  }
-  await spotifyPlayer.value.setVolume(volume / 100);
-};
+  const setVolume = async function (volume: number) {
+    if (!spotifyPlayer.value) {
+      return;
+    }
+    await spotifyPlayer.value.setVolume(volume / 100);
+  };
 </script>
 
 <style>
-.padding-0 > .p-overlaypanel-content {
-  padding: 0;
-}
+  .padding-0 > .p-overlaypanel-content {
+    padding: 0;
+  }
 </style>

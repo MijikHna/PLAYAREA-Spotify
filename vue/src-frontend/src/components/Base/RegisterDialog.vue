@@ -55,56 +55,56 @@
 </template>
 
 <script setup lang="ts">
-import Dialog from "primevue/dialog";
-import Button from "primevue/button";
-import InputText from "primevue/inputtext";
-import Password from "primevue/password";
-import { useToast } from "primevue/usetoast";
+  import Dialog from "primevue/dialog";
+  import Button from "primevue/button";
+  import InputText from "primevue/inputtext";
+  import Password from "primevue/password";
+  import { useToast } from "primevue/usetoast";
 
-import { ref, Ref } from "vue";
+  import { ref, Ref } from "vue";
 
-import { User, UserCreate } from "@/interfaces/baseInterfaces";
-import { BackendHttpService } from "@/services/BackendHttpService";
+  import { User, UserCreate } from "@/interfaces/baseInterfaces";
+  import { BackendHttpService } from "@/services/BackendHttpService";
 
-defineProps<{
-  show: boolean;
-}>();
+  defineProps<{
+    show: boolean;
+  }>();
 
-// global
-const toast = useToast();
+  // global
+  const toast = useToast();
 
-// data
-const userCreate: Ref<UserCreate> = ref({
-  username: "",
-  email: "",
-  password: "",
-  password_confirm: "",
-});
+  // data
+  const userCreate: Ref<UserCreate> = ref({
+    username: "",
+    email: "",
+    password: "",
+    password_confirm: "",
+  });
 
-const dialog = ref();
+  const dialog = ref();
 
-// methods
-const registerUser = async function () {
-  dialog.value.close();
+  // methods
+  const registerUser = async function () {
+    dialog.value.close();
 
-  try {
-    const response = await BackendHttpService.createUser(userCreate.value);
-    const user: User = response.data;
-    toast.add({
-      severity: "success",
-      summary: `You account has been created`,
-      detail: `Username: ${user.username}, Email: ${user.email}`,
-      life: 5000,
-    });
-  } catch (e) {
-    toast.add({
-      severity: "error",
-      summary: `You account couldn't be created`,
-      detail: `????`,
-      life: 5000,
-    });
+    try {
+      const response = await BackendHttpService.createUser(userCreate.value);
+      const user: User = response.data;
+      toast.add({
+        severity: "success",
+        summary: `You account has been created`,
+        detail: `Username: ${user.username}, Email: ${user.email}`,
+        life: 5000,
+      });
+    } catch (e) {
+      toast.add({
+        severity: "error",
+        summary: `You account couldn't be created`,
+        detail: `????`,
+        life: 5000,
+      });
 
-    return;
-  }
-};
+      return;
+    }
+  };
 </script>
