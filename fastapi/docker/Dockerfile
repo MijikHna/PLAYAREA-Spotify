@@ -1,10 +1,5 @@
 FROM python as base
 
-# disable .pyc files generation
-ENV PYTHONDONTWRITEBYTECODE=1
-# disable buffering for easier container logging
-ENV PYTHONBUFFERED=1
-
 WORKDIR /app
 
 RUN apt update && \
@@ -23,6 +18,13 @@ ENTRYPOINT [ "/scripts/entrypoint.sh" ]
 # --------------------------------
 
 FROM base as dev
+
+# disable .pyc files generation
+ENV PYTHONDONTWRITEBYTECODE=1
+# disable buffering for easier container logging
+ENV PYTHONBUFFERED=1
+# disable frozen modules
+ENV PYDEVD_DISABLE_FILE_VALIDATION=1
 
 RUN mkdir /helpers
 RUN python3 -m pip install debugpy -t /helpers

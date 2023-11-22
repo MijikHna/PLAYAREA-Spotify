@@ -9,6 +9,8 @@ services:
     cap_add:
       - SYS_PTRACE
     command: "python3 /helpers/debugpy --listen 0.0.0.0:5678 -m uvicorn --reload --reload-dir /app/api api.main:app --host 0.0.0.0 --port 8000 --log-level debug"
+    # command: "/bin/bash"
+    # tty: true
 
   nginx:
     command: 'echo "shut down"'

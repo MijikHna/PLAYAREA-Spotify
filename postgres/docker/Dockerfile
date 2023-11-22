@@ -1,3 +1,4 @@
+# FROM postgres
 FROM postgres:14
 
 RUN apt update && \

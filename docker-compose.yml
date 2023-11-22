@@ -40,11 +40,11 @@ services:
       - '8080:8080'
       - '8081:8081'
     volumes:
-      - ./vue/src-frontend/:/app
+      - ./vue/:/app
     environment:
       - TZ=Europe/Berlin
     env_file:
-      - ./vue/src-frontend/.env
+      - ./vue/.env
     networks:
       playarea2-nw:
         ipv4_address: 192.17.10.20
@@ -64,7 +64,7 @@ services:
     environment:
       - TZ=Europe/Berlin
     env_file:
-      - ./fastapi/src-backend/.env
+      - ./fastapi/.env
     healthcheck:
       test: curl -f http://localhost:8000 -k
       interval: 30s
@@ -74,7 +74,7 @@ services:
       playarea2-nw:
         ipv4_address: 192.17.10.30
     volumes:
-      - ./fastapi/src-backend/:/app
+      - ./fastapi:/app
     depends_on:
       postgres:
         condition: service_healthy

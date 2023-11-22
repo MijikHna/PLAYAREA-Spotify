@@ -1,8 +1,12 @@
+# Debugging and Lining
+pylint
+
 # FastAPI
 uvicorn[standard] #ASGI server
 fastapi
 python-multipart
 pydantic # validation library
+pydantic-settings
 #email-validator # allows pydantic to validate email addresses
 
 # auth
@@ -13,9 +17,9 @@ passlib # password hashing library (bcrypt)
 requests
 
 # SQL/Postgres
-databases[postgresql] # async interface to some databases including postgres
-sqlalchemy # ORM library
-asyncpg
+# databases[postgresql] # async interface to some databases including postgres
+SQLAlchemy # ORM library
+# asyncpg
 alembic # DB migration tool, which works with SQLAlchemy
 psycopg2-binary
 
