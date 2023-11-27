@@ -5,6 +5,8 @@ export class BackendHttpService {
   private static instance: BackendHttpService;
   private httpInstance: AxiosInstance;
 
+  //NOTE: eventually add retry
+
 
   constructor() {
     this.httpInstance = axios.create({
@@ -18,9 +20,12 @@ export class BackendHttpService {
 
     this.httpInstance.interceptors.response.use(
       (response: AxiosResponse) => response,
-      (error) => {
+      async (error) => {
         if (error.response.status === 401) {
-          console.error("PLAYAREA: 401 error");
+          const response = await this.httpInstance.post('/auth/renew-token', { renew_token: this.getRefreshTokenFromCookie() }, { withCredentials: true });
+          if (response.status === 200) return response;
+
+          return Promise.reject(error)
         }
         return Promise.reject(error);
       },
@@ -33,19 +38,20 @@ export class BackendHttpService {
     return BackendHttpService.instance.httpInstance;
   }
 
+  getRefreshTokenFromCookie(): string {
+    return document.cookie.split(';').find(cookie => cookie.startsWith('refresh_token')).split(':').at(1).trim();
+  }
+
   // sheet
   public static async createSheet(newSheet: INewSheet): Promise<AxiosResponse<Table>> {
-    this.setUserToken();
     return await this.http.post("/sheet/create", newSheet);
   }
 
   public static async getUserTables(): Promise<AxiosResponse<TableInfo[]>> {
-    this.setUserToken();
     return await this.http.get("/sheet/tables");
   }
 
   public static async getTable(id: number): Promise<AxiosResponse<Table>> {
-    this.setUserToken();
     return await this.http.get(`/sheet/tables/${id}`);
   }
 }

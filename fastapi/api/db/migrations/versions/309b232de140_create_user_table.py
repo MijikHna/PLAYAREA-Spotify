@@ -77,6 +77,10 @@ def create_users_table() -> None:
             server_default=sa.func.now(),
             nullable=False,
         ),
+        sa.Column(
+            'refresh_token',
+            nullable=True,
+        )
     )
 
     op.create_unique_constraint("uq_username_users", "users", ["username"])

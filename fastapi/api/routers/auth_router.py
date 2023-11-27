@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.orm import Session
 
-from api.logic.dto.token_dto import TokenDto
+from api.logic.dto.token_dto import ReqRefreshToken, TokenDto
 from api.logic.dto.user_dto import LoggedInUserDto, LoginUserDto
 from api.logic.utils.auth_service import AuthService, retrieve_user_from_token
 
@@ -25,14 +25,14 @@ async def create_user_token_fastapi(
         password=user_form.password
     )
     try:
-        token: str = auth_srv.create_user_token(db_session, user)
+        token: TokenDto = auth_srv.create_user_token(db_session, user)
     except Exception as e:
         print(e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e)
         )
-    return TokenDto(access_token=token, token_type='bearer')
+    return token
 
 
 @auth_router.post('/token', response_model=TokenDto, status_code=status.HTTP_201_CREATED)
@@ -42,14 +42,14 @@ async def create_user_token(
     db_session: Session = Depends(open_db_session)
 ) -> TokenDto:
     try:
-        token: str = auth_srv.create_user_token(db_session, user_login)
+        token: TokenDto = auth_srv.create_user_token(db_session, user_login)
     except Exception as e:
         print(e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e)
         )
-    return TokenDto(access_token=token, token_type='bearer')
+    return token
 
 
 @auth_router.get('/me', response_model=LoggedInUserDto, status_code=status.HTTP_200_OK)
@@ -57,3 +57,17 @@ async def get_user_from_token(
     logged_in_user: LoggedInUserDto = Depends(retrieve_user_from_token)
 ) -> LoggedInUserDto:
     return logged_in_user
+
+@auth_router.post('/token_renew')
+async def renew_user_token(
+    user_refresh_token: ReqRefreshToken, 
+    auth_service: AuthService = Depends(AuthService), 
+    db_session: Session = Depends(open_db_session)
+) -> TokenDto:
+    try:
+        token: TokenDto = auth_service.renew_token(user_refresh_token.refresh_token, db_session)
+        return token
+    except Exception as e:
+        raise e
+        
+

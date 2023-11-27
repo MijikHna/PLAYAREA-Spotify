@@ -58,8 +58,6 @@ class UserService:
             username=user.username,
             email=user.email
         )
-
-# profile
     def add_profile_picture(self, db_session: Session, user_id: int, profile_picture: UploadFile) -> BaseProfileDto:
         # create dir for file upload if not exist
         os.makedirs(f'static/{user_id}', exist_ok=True)

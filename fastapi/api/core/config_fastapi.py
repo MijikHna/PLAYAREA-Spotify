@@ -12,6 +12,7 @@ class PlayareaConfig(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    refresh_token_expire_minutes: int
     base_url: str
     backend_url: str
     postgres_server: str

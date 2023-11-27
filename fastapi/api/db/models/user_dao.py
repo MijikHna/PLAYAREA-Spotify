@@ -39,6 +39,8 @@ class UserDao(Base):
         server_default=func.now()
     )
 
+    refresh_token: Mapped[str] = mapped_column(String,  nullable=True)
+
     profile: Mapped['ProfileDao'] = relationship('ProfileDao', back_populates='user', uselist=False)
     # tables: Mapped[List['TableDao']|None] = relationship(back_populates='user')
 
