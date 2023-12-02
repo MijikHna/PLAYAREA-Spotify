@@ -103,7 +103,7 @@ class AuthService:
         return TokenDto(access_token=encoded_token_jwt, refresh_token=encoded_refresh_jwt, token_type='bearer')
 
     def renew_token(self, refresh_token: str, db_session: Session):
-        user: UserDao = db_session.execute(select(UserDao).where(UserDao.refresh_token == refresh_token)).scalars().one()
+        user: UserDao = db_session.execute(select(UserDao).where(UserDao.refresh_token == refresh_token)).scalars().first()
 
         if not user:
             raise Exception('User not found')
@@ -161,6 +161,11 @@ class AuthService:
             email=user.email
         )
 
+    async def logout_user(self, user_id: int, db_session: Session) -> None:
+        try:
+            db_session.execute(update(UserDao).where(UserDao.id == user_id).values(refresh_token=None))
+        except Exception as e:
+            raise e
 
 async def retrieve_user_from_token(
     # token: str = Depends(oauth2_scheme),
@@ -175,3 +180,4 @@ async def retrieve_user_from_token(
         raise e
     print('retrieve', user)
     return user
+

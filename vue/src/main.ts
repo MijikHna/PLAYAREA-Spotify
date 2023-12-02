@@ -5,6 +5,7 @@ import router from "./router";
 import { createPinia } from "pinia";
 
 import "@/assets/css/default.css";
+import "@/assets/css/variables.css";
 
 import 'primeflex/primeflex.scss';
 

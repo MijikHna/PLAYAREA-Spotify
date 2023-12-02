@@ -1,10 +1,10 @@
 import { defineStore, StoreDefinition } from "pinia";
 import { Device } from "@/types/spotify/device.types";
-import { Track, TrackList } from "@/types/spotify/track.types";
+import { Track } from "@/types/spotify/track.types";
 import { PlayList } from "@/types/spotify/playlist.types";
 
 export const useSpotifyStore:
-  StoreDefinition<'spotifyStore', SpotifyState, any, any> = defineStore("spotifyStore", {
+  StoreDefinition<'spotifyStore', SpotifyState, any, SpotifyActions> = defineStore("spotifyStore", {
     state: (): SpotifyState => ({
       // General
       loggedIn: false as boolean,

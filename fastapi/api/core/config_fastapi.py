@@ -27,6 +27,7 @@ class PlayareaConfig(BaseSettings):
     @computed_field
     @property
     def postgres_url(self) -> str:
+        print('config fastapi computed called')
         return f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}@{self.postgres_server}:{self.postgres_port}/{self.postgres_db}"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

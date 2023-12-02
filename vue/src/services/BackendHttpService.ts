@@ -21,9 +21,11 @@ export class BackendHttpService {
     this.httpInstance.interceptors.response.use(
       (response: AxiosResponse) => response,
       async (error) => {
+        console.log(error);
         if (error.response.status === 401) {
-          const response = await this.httpInstance.post('/auth/renew-token', { renew_token: this.getRefreshTokenFromCookie() }, { withCredentials: true });
+          const response = await this.httpInstance.post('/auth/renew-token', { renew_token: window.localStorage.getItem('refresh_token') }, { withCredentials: true });
           if (response.status === 200) return response;
+          // make initial request again
 
           return Promise.reject(error)
         }

@@ -43,6 +43,7 @@ async def create_user_token(
 ) -> TokenDto:
     try:
         token: TokenDto = auth_srv.create_user_token(db_session, user_login)
+        print(token)
     except Exception as e:
         print(e)
         raise HTTPException(
@@ -60,14 +61,24 @@ async def get_user_from_token(
 
 @auth_router.post('/token_renew')
 async def renew_user_token(
-    user_refresh_token: ReqRefreshToken, 
+    refresh_token: ReqRefreshToken, 
     auth_service: AuthService = Depends(AuthService), 
     db_session: Session = Depends(open_db_session)
 ) -> TokenDto:
     try:
-        token: TokenDto = auth_service.renew_token(user_refresh_token.refresh_token, db_session)
+        token: TokenDto = auth_service.renew_token(refresh_token.refresh_token, db_session)
         return token
     except Exception as e:
         raise e
         
 
+@auth_router.post('/logout')
+async def logout_user(
+    logged_in_user: LoggedInUserDto = Depends(retrieve_user_from_token),
+    auth_service: AuthService = Depends(AuthService), 
+    db_session: Session = Depends(open_db_session)
+) -> None:
+    try:
+        auth_service.logout_user(logged_in_user.id, db_session)
+    except Exception as e:
+        raise e

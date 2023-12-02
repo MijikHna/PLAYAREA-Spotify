@@ -66,14 +66,20 @@ const menuItems = computed(() => {
 const user = computed(() => userStore.user);
 const activeUser = computed(() => authStore.activeUser);
 
-const logout = function () {
+const logout = async function () {
+  const response = await BackendHttpService.http.post(`${BACKEND_URL}/auth/logout`);
+  if (response.status !== 200) console.error("Error logging out")
+
   const expiredDate = new Date(0);
 
   document.cookie = `Authorization=; expires=${expiredDate.toUTCString()}`;
-  BackendHttpService.http.defaults.headers.common["Authorization"] = "";
+  //BackendHttpService.http.defaults.headers.common["Authorization"] = "";
+
+  window.localStorage.removeItem("refreshToken");
+
+
 
   userStore.setUser(null);
-
   router.push("/login");
 };
 

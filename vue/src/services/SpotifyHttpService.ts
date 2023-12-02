@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import { BackendHttpService } from "./BackendHttpService";
 
 export class SpotifyHttpService {
   private static instance: SpotifyHttpService;
@@ -19,9 +20,18 @@ export class SpotifyHttpService {
     // user interceptor to handle 401 error
     this.httpInstance.interceptors.response.use(
       (response: AxiosResponse) => response,
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
         if (error.response.status === 401) {
-          console.error("Spotify: 401 error");
+          const response = await BackendHttpService.http.get("/spotify/get-token");
+
+          const token = response.data.token;
+          this.httpInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+          console.log(error);
+          const test = await this.httpInstance.request(error.config);
+          console.log(test);
+
+          return test;
         }
         return Promise.reject(error);
       },

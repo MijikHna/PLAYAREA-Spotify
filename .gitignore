@@ -210,4 +210,7 @@ yarn-error.log
 postgres/docker/data/
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,python,virtualenv,venv,vue,vuejs
-pos
+
+fastapi/static/
+
+

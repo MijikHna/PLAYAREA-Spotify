@@ -26,13 +26,12 @@ spotify_router: APIRouter = APIRouter(
 async def login_to_spotify(
     user: LoggedInUserDto = Depends(retrieve_user_from_token),
     spotify_service: SpotifyService = Depends(SpotifyService),
-    db_session: Session = Depends(open_db_session)
 ) -> JSONResponse:
-    query_params = spotify_service.login_to_spotify(user)
+    login_query_params: str = spotify_service.prepare_spotify_login_url_params(user)
 
     return JSONResponse(
         content={
-            'url': f'https://accounts.spotify.com/authorize/?{query_params.to_query_str()}'
+            'url': f'https://accounts.spotify.com/authorize/?{login_query_params}'
         },
         status_code=status.HTTP_200_OK,
     )
@@ -59,12 +58,31 @@ async def get_token(
     spotify_service: SpotifyService = Depends(SpotifyService),
 ) -> JSONResponse:
     user_token = spotify_service.get_user_token(user_id=user.id)
+    print('get-token', user_token)
+
+    if user_token is None:
+        return JSONResponse(content={'token:': None}, status_code=200)
+
+    return JSONResponse(content={
+        'token': user_token.access_token, 
+        'expires_in': user_token.expires_in
+    }, status_code=200)
+
+@spotify_router.get('/refresh-token')
+async def refresh_token(
+    user: LoggedInUserDto = Depends(retrieve_user_from_token),
+    spotify_service: SpotifyService = Depends(SpotifyService),
+) -> JSONResponse:
+    user_token = spotify_service.refresh_token(user_id=user.id)
     print(user_token)
 
     if user_token is None:
-        return JSONResponse(content={'token:': 'Token not found'}, status_code=400)
+        return JSONResponse(content={'token:': None}, status_code=200)
 
-    return JSONResponse(content={'token': user_token.access_token}, status_code=200)
+    return JSONResponse(content={
+        'token': user_token.access_token, 
+        'expires_in': user_token.expires_in
+    }, status_code=200)
 
 
 @spotify_router.delete('/logout', status_code=status.HTTP_202_ACCEPTED)

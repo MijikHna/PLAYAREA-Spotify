@@ -1,0 +1,10 @@
+:root {
+   --stats-height:                  calc(100vh - 56px - 56px - 45px - 40px);
+   --stats-scrollpanel-height:      calc(100vh - 56px - 56px - 45px - 46px);
+   --stats-sidebar-height:          calc(100vh - 56px - 56px - 45px - 40px);
+   --player-height:                 calc(100vh - 56px - 56px - 45px - 40px);
+   --discover-height:               calc(100vh - 56px - 56px - 45px - 40px);
+   --discover-scrollpanel-height:   calc(100vh - 56px - 56px - 45px - 42px);
+   --visualizer-height:             calc(100vh - 56px - 56px - 45px - 40px - 112px);
+   /* --player-controll-height:     calc(100vh - 56px - 56px - 45px - 40px - 112px); */
+}

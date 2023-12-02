@@ -1,6 +1,6 @@
-from typing import Optional
-from datetime import datetime
-from pydantic import BaseModel
+from typing import Optional, Any
+from datetime import datetime, timedelta
+from pydantic import BaseModel, Field
 
 
 class SpotifyUserTokenDto(BaseModel):
@@ -9,6 +9,7 @@ class SpotifyUserTokenDto(BaseModel):
     expires_in: int
     refresh_token: str
     scope: str
+    expires: datetime
 
 
 class SpotifyCallbackDto(BaseModel):

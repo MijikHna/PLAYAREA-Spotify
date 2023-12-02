@@ -2,10 +2,12 @@ from typing import Any, List, Optional
 
 from pydantic import BaseModel
 
+from api.logic.dto.spotify_dto import SpotifyUserTokenDto
+
 class SpotifyUser(BaseModel):
     user_id: int
     state: str
-    token: Optional[Any] = None
+    token: Optional[SpotifyUserTokenDto] = None
 
 
 

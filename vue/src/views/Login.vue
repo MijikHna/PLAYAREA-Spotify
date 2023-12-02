@@ -47,19 +47,25 @@ const login = async function () {
 
     const responseData = response.data as UserTokenResponse;
 
+    // handle tokens
     const tokenInfo: DecodedUserToken =
       JSON.parse(Buffer.from(responseData.access_token.split(".")[1], "base64").toString("utf-8"));
+
+    // set auth cookie
     const authCoookieExpDate = new Date(tokenInfo.exp * 1000).toUTCString();
 
     document.cookie = `Authorization=${responseData.access_token}; expires=${authCoookieExpDate}`;
 
-
+    //  refresh token
+    window.localStorage.setItem("refreshToken", responseData.refresh_token);
 
     router.push({ name: "home" });
   } catch (e) {
     const error: Error = e as Error;
 
     document.cookie = `Authorization=; expires=${new Date(0).toUTCString()}`;
+
+    window.localStorage.removeItem("refreshToken");
 
     toast.add({
       severity: "error",

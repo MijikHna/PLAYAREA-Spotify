@@ -15,19 +15,15 @@ import Visualizer from "./Visualizer.vue";
 
 <style scoped>
 .player {
-  /* position: absolute; */
   height: 10%;
 }
 
 .visualizer {
-  /* position: absolute; */
   height: 80%;
-  max-height: calc(100vh - 56px - 40px - 42px - 46px - 34px - 50px - 26px - 14px);
   overflow-y: auto;
 }
 
 .track-slider {
-  /* position: absolute; */
   height: 10%;
 }
 </style>

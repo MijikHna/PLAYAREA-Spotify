@@ -79,7 +79,9 @@ def create_users_table() -> None:
         ),
         sa.Column(
             'refresh_token',
+            sa.Text,
             nullable=True,
+            default=None
         )
     )
 
