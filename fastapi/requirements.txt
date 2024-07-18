@@ -1,0 +1,25 @@
+# main
+fastapi
+
+python-multipart
+pydantic-settings
+
+python-jose
+passlib
+
+SQLAlchemy
+psycopg2-binary
+
+requests
+
+# ci/cd
+alembic
+
+# test
+pytest
+
+# dev
+pylint
+isort
+black
+debugpy

@@ -1,4 +1,14 @@
-## PLAYAREA
+# PLAYAREA
+
+## PURPOSE
+
+There are a couple of things that I am missing in actual Spotify App.
+
+1. I want to have a proper podcast history
+2. I want to be able to add bookmarks for podcasts, so letter I can listen again parts that I have bookmarked
+3. I want to be able show the statics of my listening habits
+
+## Frameworks
 
 This is a pet project to play with:
 * [FastAPI](https://fastapi.tiangolo.com/)
@@ -67,9 +77,4 @@ Just a simple Browser Spotify Player with simple interface. I try continuously t
 
 Here is a screenshot of the current state:
 ![Spotify App](https://github.com/MijikHna/PLAYAREA3/blob/media/media/spotify-app.png?raw=true)
-
-#### 2 Excel App
-
-NOT YET IMPLEMENTED
-
 

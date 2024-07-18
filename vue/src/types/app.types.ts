@@ -7,5 +7,12 @@ export interface App {
 export interface MenuItem {
   label: string;
   icon: string;
-  url: string;
+  hasSubmenu?: boolean;
+  // TODO: exactly one of these should be defined
+  route?: string;
+  items?: MenuItem[];
+}
+
+class Test {
+      constructor() { }
 }

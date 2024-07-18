@@ -1,12 +1,11 @@
-from fastapi import APIRouter, status, Depends, HTTPException, UploadFile
-
 from sqlalchemy.orm import Session
 
-from api.logic.dto.profile_dto import BaseProfileDto, GetProfileDto, PutProfileDto
-from api.logic.dto.user_dto import LoggedInUserDto, CreateUserDto
-from api.logic.services.user_service import UserService
-from api.logic.utils.auth_service import retrieve_user_from_token
-from api.logic.utils.db_manager import open_db_session
+from api.schemas.profile import BaseProfileDto, GetProfileDto, PutProfileDto
+from api.schemas.user import CreateUserDto, LoggedInUserDto
+from api.services.auth.auth_service import retrieve_user_from_token
+from api.services.user_service import UserService
+from api.utils.db_manager import open_db_session
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
 user_router: APIRouter = APIRouter(
     prefix='/api/users',

@@ -1,6 +1,6 @@
 # Notizen
 
-## posgres
+## postgres
 
 * `docker-compose exec db psql -h localhost -U playarea2_user --dbname=playarea2_db`
 * `\l` - list all databases
@@ -12,7 +12,7 @@
 
 ## backend
 
-man kann mit `starlette.config.Config` einfacher and **.env** variablen drankommen
+Man kann mit `starlette.config.Config` einfacher and **.env** variablen drankommen
 
 ### Mako
 
@@ -44,6 +44,7 @@ yourproject/
 * `alembic revision -m "create account table"` - Migration Skript erstellen
 
 * `alembic upgrade head` - bis zur letzten Migration laufen (man kann auch die Revissionnummer anstelle von `head` angeben)
+
 * `alembic upgrade +2`, `alembic downgrade ae10+2` - Migration relative zur Aktuellen oder zur bestimmten Revision laufen
 * `alembic current`
 * `alembic history --verbose`

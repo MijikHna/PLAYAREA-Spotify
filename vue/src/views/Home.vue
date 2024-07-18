@@ -1,52 +1,58 @@
 <template>
-  <div class="min-w-full m-0 p-2">
-    <div class="col-12" v-for="(app, index) in apps" :key="index">
-      <Card class="p-m-2">
-        <template #header>
-          <img class="image-size mt-2" :alt="`${app.name} icon`" :src="app.image" />
+  <div class="min-w-full min-h-full m-0 p-2 flex justify-center">
+    <div class="grid grid-cols-1 grid-rows-1">
+
+      <Card class="self-center">
+        <template #header >
+          <div class="flex justify-center">
+            <img class="image-size mt-2 justify-center" alt="Spotify icon" :src="spotifyImgUrl" />
+          </div>
         </template>
-        <template #title> {{ app.name }}</template>
+        <template #title> Spotify </template>
         <template #content>
-          Here you can explore the {{ app.name }} application. <br />
+          Here you can explore the Spotify application.<br />
           Try it out!!!
         </template>
         <template #footer>
-          <Button icon="pi pi-forward" label="Try" @click="goTo(app.url)" />
+          <Button icon="pi pi-sign-in" label="Login to Spotify" @click="loginToSpotify" />
+          <!-- <Button icon="pi pi-sign-in" label="Login to Spotify" @click="loginToSpotify" /> -->
         </template>
       </Card>
     </div>
-  </div>
+    </div>
 </template>
 
 <script setup lang="ts">
+import { Router, useRouter } from "vue-router";
+
 import Button from "primevue/button";
 import Card from "primevue/card";
 
-import { Router, useRouter } from "vue-router";
+import { useToast } from "primevue/usetoast";
+import { ToastServiceMethods } from "primevue/toastservice";
 
-import { App } from "@/interfaces/baseInterfaces";
-
-import sheetImgUrl from "@/assets/images/sheet-icon.png";
 import spotifyImgUrl from "@/assets/images/spotify-icon.png";
 
-const router: Router = useRouter();
+import { BackendHttpService } from "@/services/BackendHttpService";
 
-const apps: App[] = [
-  {
-    name: "Spotify",
-    url: "/spotify/player",
-    image: spotifyImgUrl,
-  },
-  {
-    name: "Sheet",
-    url: "/sheet",
-    image: sheetImgUrl,
-  },
-];
+// global data
+const toast: ToastServiceMethods = useToast();
 
-const goTo = function (url: string) {
-  router.push({ path: url });
+const loginToSpotify = async function (): Promise<void> {
+  try {
+    const response = await BackendHttpService.http.get("/spotify/login");
+
+    if (response.status === 200) window.location.href = response.data.url;
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "Spotify Login",
+      detail: "An error occurred while trying to login to Spotify",
+      life: 5000,
+    });
+  }
 };
+
 </script>
 
 <style scoped>

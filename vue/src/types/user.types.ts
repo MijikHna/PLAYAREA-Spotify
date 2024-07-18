@@ -25,5 +25,5 @@ export interface User {
   id: number;
   username?: string;
   email: string;
-  profile: Profile;
+  profile: Profile | null;
 }

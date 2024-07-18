@@ -12,4 +12,5 @@ export interface UserToken {
 export interface UserTokenResponse {
   access_token: string;
   token_type: string;
+  refresh_token: string;
 }

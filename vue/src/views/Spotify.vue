@@ -1,69 +1,43 @@
 <template>
-  <div class="col-12 p-0">
-    <Menu />
-    <div class="flex">
-      <TabMenu :model="tabMenuItems" @tabChange="handleTabChange" />
-    </div>
     <router-view v-slot="{ Component }">
-      <KeepAlive>
+      <KeepAlive :include="['Player']">
         <component :is="Component" />
       </KeepAlive>
     </router-view>
-  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, Ref, onMounted } from "vue";
+import { onMounted } from "vue";
 import { AxiosResponse } from "axios";
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+
 
 import { useToast } from "primevue/usetoast";
-import TabMenu, { TabMenuChangeEvent } from 'primevue/tabmenu';
 import { ToastServiceMethods } from "primevue/toastservice";
 import { useSpotifyStore } from "@/store/spotify";
+import { useUserStore } from "@/store/user";
+
+import { useRouter } from "vue-router";
 
 import { BackendHttpService } from "@/services/BackendHttpService";
 import { SpotifyHttpService } from "@/services/SpotifyHttpService";
-import { SpotifyTabMenuItem } from "@/types/spotify/app.types";
-import { SpotifyWindow } from "@/types/spotify/app.types";
-
-import Menu from "@/components/Spotify/Menu.vue";
+import { onBeforeRouteUpdate } from "vue-router";
+import { UtilsService } from "@/services/UtilsService";
+import { DecodedUserToken, UserToken } from "@/types/auth.types";
 
 //global
-const router = useRouter();
 const spotifyStore = useSpotifyStore();
+const userStore = useUserStore();
+const router = useRouter();
+
 const toast: ToastServiceMethods = useToast();
 
-const { loggedIn, spotifyPlayer, spotifyPlayerDOMElem } = storeToRefs(spotifyStore);
-const spotifyWindow: SpotifyWindow = window as unknown as SpotifyWindow;
-// data
-
-const tabMenuItems: Ref<SpotifyTabMenuItem[]> = ref([
-  {
-    label: 'Player',
-    icon: 'pi pi-volume-up',
-    to: 'player',
-  },
-  {
-    label: 'Discover',
-    icon: 'pi pi-list',
-    to: 'discover',
-  },
-  {
-    label: 'Stats',
-    icon: 'pi pi-star',
-    to: 'stats',
-  }
-]);
+const { dom, auth, player } = storeToRefs(spotifyStore);
+const spotifyWindow: Window = window
 
 // methods
-const handleTabChange = (e: TabMenuChangeEvent) => {
-  router.push({ name: tabMenuItems.value[e.index].to });
-}
-
 const initSpotifyPlayer = async function () {
-  if (spotifyPlayer.value) return;
+  if (dom.value.spotifyPlayer) return;
 
   let response: AxiosResponse;
   try {
@@ -86,10 +60,10 @@ const initSpotifyPlayer = async function () {
 
   document.head.appendChild(spotifyPlayerSDKDOMElemTemp);
 
-  spotifyPlayerDOMElem.value = spotifyPlayerSDKDOMElemTemp;
+  dom.value.spotifyPlayerDOMElem = spotifyPlayerSDKDOMElemTemp;
 
   spotifyWindow.onSpotifyWebPlaybackSDKReady = () => {
-    spotifyPlayer.value = new spotifyWindow.Spotify.Player({
+    dom.value.spotifyPlayer = new spotifyWindow.Spotify.Player({
       name: "Playarea2 Web Playback",
       getOAuthToken: async (callback: (token: string) => void) => {
         console.log("Getting OAuth Token");
@@ -102,8 +76,8 @@ const initSpotifyPlayer = async function () {
 
     });
 
-    spotifyPlayer.value.addListener("ready", ({ device_id }) => {
-      loggedIn.value = true;
+    dom.value.spotifyPlayer.addListener("ready", ({ device_id }) => {
+      auth.value.loggedIn = true;
 
       toast.add({
         severity: "success",
@@ -113,12 +87,12 @@ const initSpotifyPlayer = async function () {
       });
     });
 
-    spotifyPlayer.value.addListener("not_ready", ({ device_id }) => {
+    dom.value.spotifyPlayer.addListener("not_ready", ({ device_id }) => {
       // Toaster Message
       console.log("Device ID has gone offline");
     });
 
-    spotifyPlayer.value.addListener(
+    dom.value.spotifyPlayer.addListener(
       "player_state_changed",
       (
         // {track_window: {current_track, next_tracks } = null}
@@ -127,40 +101,88 @@ const initSpotifyPlayer = async function () {
         console.log(state);
 
         if (state === null) {
-          spotifyStore.activePlayList = null;
-          spotifyStore.playingContext = null;
-          spotifyStore.playerActive = false;
-          spotifyStore.currentTrack = null;
-          spotifyStore.nextTracks = [];
+          player.value.activePlayList = null;
+          player.value.playingContext = null;
+          player.value.playerActive = false;
+          player.value.currentTrack = null;
+          player.value.nextTracks = [];
 
           return;
         }
 
         //TODO: grab properly current Track: current duration-postion and paused state
-        spotifyStore.playerActive = true;
-        spotifyStore.currentTrack = state.track_window.current_track;
-        spotifyStore.nextTracks = state.track_window.next_tracks;
-        spotifyStore.playingContext = state;
+        player.value.playerActive = true;
+        player.value.currentTrack = state.track_window.current_track;
+        player.value.nextTracks = state.track_window.next_tracks;
+        player.value.playingContext = state;
       },
     );
 
-    spotifyPlayer.value.addListener('initialization_error', ({ message }) => {
+    dom.value.spotifyPlayer.addListener('initialization_error', ({ message }) => {
       console.error('init', message);
     });
 
-    spotifyPlayer.value.addListener('authentication_error', async ({ message }) => {
+    dom.value.spotifyPlayer.addListener('authentication_error', async ({ message }) => {
       console.error('auth', message);
     });
 
-    spotifyPlayer.value.addListener('account_error', ({ message }) => {
+    dom.value.spotifyPlayer.addListener('account_error', ({ message }) => {
       console.error('account', message);
     });
 
-    spotifyStore.spotifyPlayer.connect();
+    dom.value.spotifyPlayer.connect();
   };
 };
 
-onMounted(async () => await initSpotifyPlayer());
+onMounted(async () => { 
+  await initSpotifyPlayer()
+
+    if (!spotifyStore.auth?.loggedIn) {
+    { name: "home" };
+    }
+    
+    if (!userStore.user) {
+      const userTokenInfo: DecodedUserToken  = UtilsService.decodeCookieToken("Authorization");
+
+      const profileResponse = await BackendHttpService.http.get(`/users/profile/${userTokenInfo.id}`);
+
+      if (profileResponse.status === 200) {
+        userStore.setUser({
+          id: userTokenInfo.id,
+          email: userTokenInfo.user_identifier,
+          profile: profileResponse.data
+        });
+      }
+    
+    }
+
+});
+
+  // hooks
+onBeforeRouteUpdate(async (to) => {
+    // NOTE: maybe also check spotify token
+    if (!spotifyStore.auth?.loggedIn) {
+      if (to.name === "home") return;
+      return router.push({ name: "home" });
+    }
+    
+    if (!userStore.user) {
+      const userTokenInfo: DecodedUserToken  = UtilsService.decodeCookieToken("Authorization");
+
+      const profileResponse = await BackendHttpService.http.get(`/users/profile/${userTokenInfo.id}`);
+
+      if (profileResponse.status === 200) {
+        userStore.setUser({
+          id: userTokenInfo.id,
+          email: userTokenInfo.user_identifier,
+          profile: profileResponse.data
+        });
+      }
+    
+    }
+  });
+
+
 </script>
 
 <style scoped></style>

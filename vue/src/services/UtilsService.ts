@@ -1,43 +1,40 @@
-import { DecodedUserToken, UserToken } from "@/types/auth.types";
 import { Buffer } from "buffer";
 
 export class UtilsService {
-  static getDecodedAuthCookie = (): DecodedUserToken => {
+  static decodeCookieToken = <T>(cookieName: string): T | null => {
     const cookies = document.cookie.split("; ");
 
-    let decodedUserToken: DecodedUserToken = null;
+    let decodedUserToken: T | null = null;
 
-    cookies.every((cookie) => {
-      if (cookie.startsWith("Authorization=")) {
-        const token: string = cookie.split("=")[1];
+    const cookie = cookies.find((cookie) => cookie.startsWith(cookieName))?.split("=")[1];
 
-        decodedUserToken = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString("utf-8"));
-        return false;
-      }
-
-      return true;
-    });
-
+    if (cookie) {
+      decodedUserToken = JSON.parse(Buffer.from(cookie.split(".")[1], "base64").toString("utf-8"));
+    }
     return decodedUserToken;
   };
 
-  static getAuthToken = (): UserToken => {
+  static getCookieValue = (cookieName: string): string => {
     const cookies = document.cookie.split("; ");
 
-    let userToken: UserToken = null;
+    const cookie: string | null = cookies.find((cookie) => cookie.startsWith(cookieName));
 
-    cookies.every((cookie) => {
-      if (cookie.startsWith("Authorization")) {
-        const token: any = JSON.parse(cookie.split("=")[1]);
-        userToken = {
-          accessToken: token.access_token,
-          tokenType: token.token_type,
-        };
-        return false;
-      }
-      return true;
-    });
+    if (!cookie) return null;
 
-    return userToken;
+    return cookie.split("=")[1];
+  };
+
+  static isTokenExpired = (expDate: number): boolean => {
+    const now = new Date();
+    const exp = new Date(expDate * 1000);
+
+    return now > exp;
+  };
+
+  static deleteCookie = (cookieName: string): void => {
+    const cookies = document.cookie.split("; ");
+    if (cookies.find((cookie) => cookie.startsWith(cookieName))) {
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+    }
   };
 }

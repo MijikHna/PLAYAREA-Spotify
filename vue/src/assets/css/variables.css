@@ -1,10 +1,15 @@
+/*
+ * nav: 56px
+ * footer: 50px
+ * library-tab: 57px
+ * tab-padding: 32px
+ *
+ */
 :root {
-   --stats-height:                  calc(100vh - 56px - 56px - 45px - 40px);
-   --stats-scrollpanel-height:      calc(100vh - 56px - 56px - 45px - 46px);
-   --stats-sidebar-height:          calc(100vh - 56px - 56px - 45px - 40px);
-   --player-height:                 calc(100vh - 56px - 56px - 45px - 40px);
-   --discover-height:               calc(100vh - 56px - 56px - 45px - 40px);
-   --discover-scrollpanel-height:   calc(100vh - 56px - 56px - 45px - 42px);
-   --visualizer-height:             calc(100vh - 56px - 56px - 45px - 40px - 112px);
-   /* --player-controll-height:     calc(100vh - 56px - 56px - 45px - 40px - 112px); */
+  --player-height: calc(100vh - 56px - 50px);
+  --library-height: calc(100vh - 56px - 50px - 57px - 32px);
+  --stats-height: calc(100vh - 56px - 56px - 45px - 40px);
+
+  /* NOTE: maybe remove */
+  --visualizer-height: calc(100vh - 56px - 56px - 45px - 40px - 112px);
 }

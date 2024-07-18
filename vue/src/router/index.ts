@@ -1,42 +1,23 @@
 import { Buffer } from "buffer";
 
-import { createRouter, createWebHistory, RouteLocationNormalized, Router, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, RouteLocationNormalizedGeneric, Router, RouteRecordRaw } from "vue-router";
 
-import { useAuthStore } from "@/store/auth";
 import { useUserStore } from "@/store/user";
 
 import { UtilsService } from "@/services/UtilsService";
 import { BackendHttpService } from "@/services/BackendHttpService";
 import { DecodedUserToken } from "@/types/auth.types";
+import { ToastServiceMethods } from "primevue/toastservice";
+import { useToast } from "primevue/usetoast";
+import { AxiosResponse } from "axios";
+import { Profile } from "@/types/user.types";
 
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    name: "app",
-    component: () => import("@/views/AppHome.vue"),
+    name: "spotify",
+    component: () => import("@/views/Spotify.vue"),
     redirect: { name: "home" },
-    beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized) => {
-      // check if cookie "Authorization" exists
-      console.log('to home');
-      const userToken = document.cookie.split(";").find((item) => item.trim().startsWith("Authorization="));
-
-      if (!userToken) return { name: "login" };
-
-      // set active user and user profile
-      const authStore = useAuthStore();
-      const userStore = useUserStore();
-
-      const decodedToken = UtilsService.getDecodedAuthCookie();
-
-      // set active user from cookie in auth store
-      authStore.setActiveUser(decodedToken);
-
-      // get user profile from backend
-      const response = await BackendHttpService.http.get(`/users/profile/${decodedToken.id}`);
-
-      userStore.setUser({ id: decodedToken.id });
-      userStore.setUserProfile(response.data);
-    },
     children: [
       {
         path: "/home",
@@ -44,78 +25,32 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/views/Home.vue"),
       },
       {
-        path: "/spotify",
-        name: "spotify",
-        component: () => import("@/views/Spotify.vue"),
+        path: "/player",
+        name: "player",
+        component: () => import("@/views/Player.vue"),
+      },
+      {
+        path: "/library",
+        name: "library",
+        component: () => import("@/views/Library.vue"),
+      },
+      {
+        path: "/stats",
+        name: "stats",
+        redirect: { name: "my-top" },
+        component: () => import("@/views/Stats.vue"),
         children: [
           {
-            path: "player",
-            name: "player",
-            component: () => import("@/views/Spotify/Player.vue"),
+            name: "my-top",
+            path: "my-top",
+            component: () => import("@/components/spotify/Stats/UserStats.vue"),
           },
           {
-            path: "discover",
-            name: "discover",
-            redirect: { name: "playlists" },
-            component: () => import("@/views/Spotify/Discover.vue"),
-            children: [
-              {
-                path: "playlists",
-                name: "playlists",
-                component: () => import("@/components/Spotify/Discover/PlayListList.vue"),
-              },
-              {
-                path: "artists",
-                name: "artists",
-                component: () => import("@/components/Spotify/Discover/ArtistList.vue"),
-              },
-              {
-                path: "albums",
-                name: "albums",
-                component: () => import("@/components/Spotify/Discover/AlbumList.vue"),
-              },
-              {
-                path: "tracks",
-                name: "tracks",
-                component: () => import("@/components/Spotify/Discover/TrackList.vue"),
-              },
-              // NOTE: maybe Search
-            ],
-          },
-          {
-            name: "stats",
-            path: "stats",
-            redirect: { name: "my-top" },
-            component: () => import("@/views/Spotify/Stats.vue"),
-            children: [
-              {
-                name: "my-top",
-                path: "my-top",
-                component: () => import("@/components/Spotify/Stats/UserStats.vue"),
-              },
-              {
-                name: "playlist-stats",
-                path: "playlist-stats",
-                component: () => import("@/components/Spotify/Stats/PlaylistStats.vue"),
-              },
-            ],
+            name: "playlist-stats",
+            path: "playlist-stats",
+            component: () => import("@/components/spotify/Stats/PlaylistStats.vue"),
           },
         ],
-      },
-      {
-        path: "/sheet",
-        name: "sheet",
-        component: () => import("@/views/Sheet.vue"),
-      },
-      {
-        path: "/about",
-        name: "about",
-        component: () => import("@/views/About.vue"),
-      },
-      {
-        path: "/profile",
-        name: "profile",
-        component: () => import("@/views/Profile.vue"),
       },
     ],
   },
@@ -125,9 +60,14 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/Login.vue"),
   },
   {
-    path: "/test",
-    name: "test",
-    component: () => import("@/views/Test.vue"),
+    path: "/about",
+    name: "about",
+    component: () => import("@/views/About.vue"),
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    component: () => import("@/views/Profile.vue"),
   },
 ];
 
@@ -136,59 +76,59 @@ const router: Router = createRouter({
   routes,
 });
 
-router.beforeEach(async (to: any, from: any) => {
+router.beforeEach(async (to: RouteLocationNormalizedGeneric) => {
   // check if token is expired
-  console.log('before each');
-  const authStore = useAuthStore();
 
-  let authToken: DecodedUserToken | null = UtilsService.getDecodedAuthCookie();
-  let tokenExpired = false;
+  let authToken: DecodedUserToken | null = UtilsService.decodeCookieToken("Authorization");
 
-  // check if token is expired
-  if (authToken) {
-    const now = new Date();
-    const expDate = new Date(authToken.exp * 1000);
-
-    tokenExpired = now > expDate;
-  }
-
-  if (!authToken || tokenExpired) {
-    // if no token or token expired, check if refresh token exists
-    const refreshToken = window.localStorage.getItem('refreshToken');
-
+  // if no token or token expired, check if refresh token exists
+  if (!authToken || UtilsService.isTokenExpired(authToken.exp)) {
+    const refreshToken = UtilsService.getCookieValue("RefreshToken");
     if (!refreshToken) {
-      authStore.setActiveUser(null);
-      document.cookie = `Authorization=; expires=${new Date().toUTCString()}`;
+      const userStore = useUserStore();
+      userStore.setUser(null);
 
-      if (to.path !== '/login') return { name: "login" };
-      if (to.path === '/login') return;
+      if (to.path !== "/login") return { name: "login" };
+      if (to.path === "/login") return;
     }
+
     // refresh token
-    console.log('token expired, refreshing...')
-    const response = await BackendHttpService.http.post("/auth/token_renew", { refresh_token: window.localStorage.getItem('refreshToken') });
+    console.log("token expired, refreshing...");
+    try {
+      const response = await BackendHttpService.http.post("/auth/token_renew", {
+        refresh_token: refreshToken,
+      });
+      if (response.status === 200) {
+        const tokenInfo: DecodedUserToken = JSON.parse(Buffer.from(response.data.access_token.split(".")[1], "base64").toString("utf-8"));
+        const authCoookieExpDate = new Date(tokenInfo.exp * 1000).toUTCString();
+        document.cookie = `Authorization=${response.data.access_token}; expires=${authCoookieExpDate}`;
 
-    if (response.status === 200) {
-      const tokenInfo: DecodedUserToken =
-        JSON.parse(Buffer.from(response.data.access_token.split(".")[1], "base64").toString("utf-8"));
+        const refreshTokenInfo: any = JSON.parse(Buffer.from(response.data.refresh_token.split(".")[1], "base64").toString("utf-8"));
+        const refreshCookieExpDate = new Date(refreshTokenInfo.exp * 1000).toUTCString();
+        document.cookie = `RefreshToken=${response.data.refresh_token}; expires=${refreshCookieExpDate}`;
 
-      const authCoookieExpDate = new Date(tokenInfo.exp * 1000).toUTCString();
+        const profileResponse: AxiosResponse<Profile> = await BackendHttpService.http.get(`/user/profile/${tokenInfo.id}`);
 
-      document.cookie = `Authorization=${response.data.access_token}; expires=${authCoookieExpDate}`;
+        if (profileResponse.status === 200) {
+          const profile: Profile = profileResponse.data;
+          console.log("profile", profile);
+          const userStore = useUserStore();
+          userStore.setUser({
+            id: tokenInfo.id,
+            email: tokenInfo.user_identifier,
+            profile: profile,
+          });
 
-      // handle refresh token
-      window.localStorage.setItem("refreshToken", response.data.refresh_token);
-
-      return from.path;
+          if (to.path !== "/name") return { name: "home" };
+          return;
+        }
+      }
+    } catch (error) {
+      UtilsService.deleteCookie("Authorization");
+      UtilsService.deleteCookie("RefreshToken");
+      return { name: "login" };
     }
-
-    window.localStorage.removeItem('refreshToken');
-
-    if (to.path !== '/login') return { name: "login" };
-    if (to.path === '/login') return;
   }
-
-  // go to home if on login page (already logged in)
-  if (to.path === "/login") return { name: "home" };
 });
 
 export default router;

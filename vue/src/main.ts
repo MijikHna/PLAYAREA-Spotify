@@ -1,18 +1,17 @@
 import { createApp } from "vue";
+import { createPinia } from "pinia";
+
 import App from "./App.vue";
 import router from "./router";
 
-import { createPinia } from "pinia";
 
-import "@/assets/css/default.css";
+import "@/assets/css/main.css";
 import "@/assets/css/variables.css";
 
-import 'primeflex/primeflex.scss';
-
-import "primevue/resources/primevue.min.css";
 import "primeicons/primeicons.css";
 
 import PrimeVue from "primevue/config";
+import Auro from "@primevue/themes/aura";
 import Tooltip from "primevue/tooltip";
 import Ripple from "primevue/ripple";
 
@@ -25,7 +24,14 @@ const app = createApp(App);
 
 app.use(piniaStore);
 app.use(router);
-app.use(PrimeVue, { ripple: true });
+app.use(PrimeVue, { 
+  theme: { 
+    preset: Auro, 
+    options: { 
+      darkModeSelector: ".app-dark",
+    }, 
+  },
+  ripple: true });
 
 app.use(ToastService);
 app.use(DialogService);

@@ -213,4 +213,5 @@ postgres/docker/data/
 
 fastapi/static/
 
+docker-compose.override.yml
 
